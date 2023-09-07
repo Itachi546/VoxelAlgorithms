@@ -68,7 +68,7 @@ private:
 
 	float mAspect = 1.0f;
 	float mNear = 0.3f;
-	float mFar = 500.0f;
+	float mFar = 1000.0f;
 	float mFovRadians = glm::radians(60.0f);
 
 	float mRotateSpeed = 5.0f;

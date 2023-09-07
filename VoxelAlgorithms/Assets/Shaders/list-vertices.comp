@@ -5,7 +5,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 uniform int uVoxelCount;
 
 struct Vertex {
-   float p[3];
+   float p[4];
    float n[3];
 };
 
@@ -109,6 +109,7 @@ void main() {
 
        Vertex vertex;
        vertex.p[0] = p.x, vertex.p[1] = p.y, vertex.p[2] = p.z;
+       vertex.p[3] = 0.0f;
        vertex.n[0] = n.x, vertex.n[1] = n.y, vertex.n[2] = n.z;
 
 

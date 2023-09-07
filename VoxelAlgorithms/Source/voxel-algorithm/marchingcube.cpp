@@ -26,7 +26,7 @@ void MarchingCube::initialize()
 
 	uint32_t gridSize = mChunk->getNumVoxel();
 	uint32_t gridCount = (gridSize - 1) * (gridSize - 1) * (gridSize - 1);
-	const uint32_t vertexBufferSize = sizeof(float) * 6 * 3 * gridCount;
+	const uint32_t vertexBufferSize = sizeof(float) * 6 * 3 * gridSize * gridSize * gridSize;
 	mVertexBuffer = gl::createBuffer(nullptr, vertexBufferSize, GL_DYNAMIC_STORAGE_BIT);
 
 	const uint32_t indexBufferSize = sizeof(uint32_t) * 15 * gridCount;
@@ -75,6 +75,7 @@ void MarchingCube::generateVertices()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mVertexBuffer);
 	glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, mCountBuffer, 0, sizeof(uint32_t));
 	glBindImageTexture(3, mChunk->getDensityTexture(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32F);
+	
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, mSplatBuffer);
 
 	glDispatchCompute((gridSize + 8) / 8, (gridSize + 8) / 8, (gridSize + 8) / 8);
@@ -111,9 +112,9 @@ void MarchingCube::render(OrbitCamera* camera)
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (void*)(sizeof(float) * 4));
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 	glDrawElements(GL_TRIANGLES, mTriangleCount * 3, GL_UNSIGNED_INT, 0);

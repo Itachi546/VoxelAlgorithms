@@ -116,7 +116,7 @@ int main()
     DensityParams params = { 1.0f, 1.0f, 0.5f, 0.5f, 5 };
     DensityBuilder densityBuilder(params, densityShader);
 
-    const int CHUNK_SIZE = 32;
+    const int CHUNK_SIZE = 256;
     VoxelChunk voxelChunk{ CHUNK_SIZE, 1 };
     voxelChunk.generateDensities(&densityBuilder);
 
