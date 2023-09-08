@@ -41,11 +41,11 @@ void MarchingCube::initialize()
 	assert(mCountBufferPtr != nullptr);
 
 
-	uint32_t listVerticesCS = gl::createShader("Assets/Shaders/list-vertices.comp");
+	uint32_t listVerticesCS = gl::createShader("Assets/SPIRV/list-vertices.comp.spv");
 	mListVerticesShader = gl::createProgram(&listVerticesCS, 1);
 	gl::destroyShader(listVerticesCS);
 
-	uint32_t listIndicesCS = gl::createShader("Assets/Shaders/list-indices.comp");
+	uint32_t listIndicesCS = gl::createShader("Assets/SPIRV/list-indices.comp.spv");
 	mListIndicesShader = gl::createProgram(&listIndicesCS, 1);
 	gl::destroyShader(listIndicesCS);
 
@@ -100,15 +100,14 @@ void MarchingCube::generateIndices()
 	glUseProgram(0);
 }
 
-void MarchingCube::render(OrbitCamera* camera)
+void MarchingCube::render(OrbitCamera* camera, unsigned int globalUBO)
 {
 
 	glm::mat4 P = camera->getProjectionMatrix();
 	glm::mat4 V = camera->getViewMatrix();
 
 	glUseProgram(mDrawShader);
-	glUniformMatrix4fv(glGetUniformLocation(mDrawShader, "P"), 1, GL_FALSE, &P[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(mDrawShader, "V"), 1, GL_FALSE, &V[0][0]);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	glEnableVertexAttribArray(0);
@@ -124,8 +123,8 @@ void MarchingCube::render(OrbitCamera* camera)
 
 void MarchingCube::destroy()
 {
-	gl::destroyShader(mListVerticesShader);
-	gl::destroyShader(mListIndicesShader);
+	gl::destroyProgram(mListVerticesShader);
+	gl::destroyProgram(mListIndicesShader);
 
 	gl::destroyBuffer(mTriLUTBuffer);
 	gl::destroyBuffer(mVertexBuffer);

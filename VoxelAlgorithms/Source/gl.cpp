@@ -8,25 +8,31 @@
 
 namespace gl {
 
-    static std::string readFile(const std::string& filename)
+    static void readFile(const std::string& filename, std::vector<unsigned char>& code)
     {
-        std::ifstream fileStream(filename);
-        if (!fileStream)
-        {
-            std::cerr << "Failed to load file " << filename << std::endl;
-            assert(0);
-        }
+        std::ifstream inFile(filename, std::ios::binary);
 
-        return std::string{
-          (std::istreambuf_iterator<char>(fileStream)),
-          std::istreambuf_iterator<char>()
-        };
+        inFile.unsetf(std::ios::skipws);
+
+        // get its size:
+        std::streampos fileSize;
+        inFile.seekg(0, std::ios::end);
+        fileSize = inFile.tellg();
+        inFile.seekg(0, std::ios::beg);
+
+        code.reserve(fileSize);
+
+        // read the data:
+        code.insert(code.begin(),
+            std::istream_iterator<unsigned char>(inFile),
+            std::istream_iterator<unsigned char>());
     }
 
 
-    static std::string getFileExtension(const std::string& filename)
+    static std::string getShaderType(const std::string& filename)
     {
-        return filename.substr(filename.find_last_of('.') + 1, filename.size());
+        std::string trimmedSpvExt = filename.substr(0, filename.find_last_of('.'));
+        return trimmedSpvExt.substr(trimmedSpvExt.find_last_of('.') + 1, trimmedSpvExt.length());
     }
 
     static GLenum getShaderTypeFromExtension(const std::string& extension) {
@@ -43,14 +49,17 @@ namespace gl {
     }
 
     GLuint createShader(const std::string& filename) {
-        std::string extension = getFileExtension(filename);
+        std::string extension = getShaderType(filename);
         GLenum shaderType = getShaderTypeFromExtension(extension);
-        std::string shaderCode = readFile(filename);
 
-        const char* code = shaderCode.c_str();
-        GLuint handle = glCreateShader(shaderType);
-        glShaderSource(handle, 1, &code, nullptr);
-        glCompileShader(handle);
+        std::vector<unsigned char> shaderCode;
+		readFile(filename, shaderCode);
+
+		GLuint handle = glCreateShader(shaderType);
+        //glShaderSource(handle, 1, &code, nullptr);
+		//glCompileShader(handle);
+        glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderCode.data(), (uint32_t)shaderCode.size());
+        glSpecializeShader(handle, "main", 0, 0, 0);
 
         char errBuffer[4096];
         GLsizei errLength = 0;

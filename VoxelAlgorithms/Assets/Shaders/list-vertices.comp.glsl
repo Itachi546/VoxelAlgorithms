@@ -2,7 +2,7 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
-uniform int uVoxelCount;
+const int VOXEL_COUNT = 256;
 
 struct Vertex {
    float p[4];
@@ -21,7 +21,7 @@ layout(std430, binding = 1) writeonly buffer Vertices {
   Vertex vertices[];
 };
 
-layout(std430, binding = 2) readonly buffer VertexCount {
+layout(std430, binding = 2) writeonly buffer VertexCount {
   uint totalTriangle;
 };
 
@@ -43,6 +43,32 @@ vec4 createPoint(ivec3 p) {
 }
 
 const ivec2 E = ivec2(1, 0);
+float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
+
+float noise(vec3 p){
+    vec3 a = floor(p);
+    vec3 d = p - a;
+    d = d * d * (3.0 - 2.0 * d);
+
+    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 k1 = perm(b.xyxy);
+    vec4 k2 = perm(k1.xyxy + b.zzww);
+
+    vec4 c = k2 + a.zzzz;
+    vec4 k3 = perm(c);
+    vec4 k4 = perm(c + 1.0);
+
+    vec4 o1 = fract(k3 * (1.0 / 41.0));
+    vec4 o2 = fract(k4 * (1.0 / 41.0));
+
+    vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+    vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+
+	return o4.y * d.y + o4.x *	(1.0 - d.y);
+}
+
 vec3 calculateNormal(vec3 p) {
 
    ivec3 ip = ivec3(p);
@@ -61,8 +87,15 @@ vec3 interpolatePosition(vec4 p0, vec4 p1, float isoLevel, out vec3 n) {
 
    vec3 n0 = calculateNormal(p0.xyz);
    vec3 n1 = calculateNormal(p1.xyz);
-   n = normalize(n0 + d * (n1 - n0)); 
-   return p0.xyz + d * (p1.xyz - p0.xyz);
+   n = n0 + d * (n1 - n0); 
+   
+   vec3 p = p0.xyz + d * (p1.xyz - p0.xyz);
+   vec3 v = vec3(noise(p * 4.0), noise(p.yxz * 4.0), noise(p.yzx * 4.0));
+   v += noise(p * 8.0) * 0.5;
+   v += noise(p * 16.0) * 0.25;
+   n = normalize(n + v);
+
+   return p;
 }
 
 void main() {
@@ -118,6 +151,6 @@ void main() {
        vertices[index] = vertex;
     }
 
-    int	splatIndex = uv.z *	(uVoxelCount + 1) * (uVoxelCount + 1) + uv.y * (uVoxelCount + 1) + uv.x;
+    int splatIndex = uv.z * (VOXEL_COUNT + 1) * (VOXEL_COUNT + 1) + uv.y * (VOXEL_COUNT + 1) + uv.x;
     splatBuffer[splatIndex]	= uvec4(values, ~0u);
 }

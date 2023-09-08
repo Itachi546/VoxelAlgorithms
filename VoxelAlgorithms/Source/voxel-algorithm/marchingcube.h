@@ -12,7 +12,7 @@ public:
 
 	void initialize() override;
 
-	void render(OrbitCamera* camera) override;
+	void render(OrbitCamera* camera, unsigned int globalUBO) override;
 
 	void destroy() override;
 

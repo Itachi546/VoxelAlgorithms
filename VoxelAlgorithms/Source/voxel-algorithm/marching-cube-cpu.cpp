@@ -33,14 +33,13 @@ void MarchingCubeCpu::initialize()
 	generateMesh();
 }
 
-void MarchingCubeCpu::render(OrbitCamera* camera)
+void MarchingCubeCpu::render(OrbitCamera* camera, unsigned int globalUBO)
 {
 	glm::mat4 P = camera->getProjectionMatrix();
 	glm::mat4 V = camera->getViewMatrix();
 
 	glUseProgram(mDrawShader);
-	glUniformMatrix4fv(glGetUniformLocation(mDrawShader, "P"), 1, GL_FALSE, &P[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(mDrawShader, "V"), 1, GL_FALSE, &V[0][0]);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
 
 	mMesh.draw();
 

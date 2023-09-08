@@ -20,7 +20,7 @@ void Raymarcher::initialize()
     gl::destroyShader(fs);
 }
 
-void Raymarcher::render(OrbitCamera* camera)
+void Raymarcher::render(OrbitCamera* camera, unsigned int globalUBO)
 {
     FullScreenQuad* fsQuad = FullScreenQuad::getInstance();
     glUseProgram(mShader);
@@ -31,9 +31,7 @@ void Raymarcher::render(OrbitCamera* camera)
     glm::vec3 cameraPosition = camera->getPosition();
     glm::mat4 inverseVP = glm::inverse(P * V);
 
-	glUniformMatrix4fv(glGetUniformLocation(mShader, "P"), 1, GL_FALSE, &P[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(mShader, "V"), 1, GL_FALSE, &V[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(mShader, "uInverseVP"), 1, GL_FALSE, &inverseVP[0][0]);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
     glUniform3fv(glGetUniformLocation(mShader, "uCamPos"), 1, &cameraPosition[0]);
     glUniform1i(glGetUniformLocation(mShader, "uTexture"), 0);
     glUniform1f(glGetUniformLocation(mShader, "uAspect"), mWidth / float(mHeight));

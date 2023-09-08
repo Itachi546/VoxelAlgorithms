@@ -84,4 +84,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Assets\Shaders\raymarch.vert.glsl" />
+    <CustomBuild Include="Assets\Shaders\raymarch.frag.glsl" />
+    <CustomBuild Include="Assets\Shaders\build-density.comp.glsl" />
+    <CustomBuild Include="Assets\Shaders\list-indices.comp.glsl" />
+    <CustomBuild Include="Assets\Shaders\list-vertices.comp.glsl" />
+    <CustomBuild Include="Assets\Shaders\main.frag.glsl" />
+    <CustomBuild Include="Assets\Shaders\main.vert.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Shaders\noise.comp.glsl" />
+  </ItemGroup>
 </Project>

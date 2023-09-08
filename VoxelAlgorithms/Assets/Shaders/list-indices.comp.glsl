@@ -2,8 +2,7 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
-uniform int uVoxelCount;
-
+const int VOXEL_COUNT = 256;
 struct Triangulation {
   int edges[16];
 };
@@ -56,7 +55,7 @@ uint getVertexIndex(ivec3 uv, int edge) {
     ivec4 offset = edgeToCellVertex[edge];
     uv += offset.xyz;
 
-    int splatIndex = uv.z * (uVoxelCount + 1) * (uVoxelCount + 1) + uv.y * (uVoxelCount + 1) + uv.x ;
+    int splatIndex = uv.z * (VOXEL_COUNT + 1) * (VOXEL_COUNT + 1) + uv.y * (VOXEL_COUNT + 1) + uv.x ;
     return splatBuffer[splatIndex][offset.w];
 }
 

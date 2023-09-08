@@ -117,6 +117,13 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)Assets/SPIRV/%(Filename).spv;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild>
+      <AdditionalInputs>%(FullPath)</AdditionalInputs>
+      <Command>$(VULKAN_SDK)\Bin\glslangValidator.exe --auto-map-locations -G %(FullPath) -o  $(ProjectDir)Assets/SPIRV/%(Filename).spv</Command>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -133,6 +140,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuild>
+      <Outputs>$(ProjectDir)Assets/SPIRV/%(Filename).spv;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild>
+      <AdditionalInputs>%(FullPath)</AdditionalInputs>
+      <Command>$(VULKAN_SDK)\Bin\glslangValidator.exe %(FullPath) -V -o  $(ProjectDir)Assets/SPIRV/%(Filename).spv</Command>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Source\build-density.h" />
@@ -159,6 +173,32 @@
     <ClCompile Include="Source\voxel-algorithm\marchingcube.cpp" />
     <ClCompile Include="Source\voxel-algorithm\raymarcher.cpp" />
     <ClCompile Include="Source\voxel-chunk.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Assets\Shaders\build-density.comp.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <CustomBuild Include="Assets\Shaders\list-indices.comp.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <CustomBuild Include="Assets\Shaders\list-vertices.comp.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <CustomBuild Include="Assets\Shaders\main.frag.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <CustomBuild Include="Assets\Shaders\main.vert.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <None Include="Assets\Shaders\noise.comp.glsl">
+      <FileType>Document</FileType>
+    </None>
+    <CustomBuild Include="Assets\Shaders\raymarch.frag.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <CustomBuild Include="Assets\Shaders\raymarch.vert.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

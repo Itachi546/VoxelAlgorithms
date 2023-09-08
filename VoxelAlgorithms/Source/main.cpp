@@ -60,6 +60,13 @@ static void window_resize_callback(GLFWwindow* window, int width, int height) {
   gHeight = height;
 }
 
+struct GlobalUniforms {
+    glm::mat4 P;
+    glm::mat4 V;
+    glm::mat4 InvVP;
+    glm::vec4 cameraPosition;
+} gGlobalUniforms;
+
 int main()
 {
     if (!glfwInit())
@@ -109,7 +116,7 @@ int main()
     fullScreenQuad->initialize();
 
     // Initialize shaders
-    GLuint densityCS = gl::createShader("Assets/Shaders/build-density.comp");
+    GLuint densityCS = gl::createShader("Assets/SPIRV/build-density.comp.spv");
     GLuint densityShader = gl::createProgram(&densityCS, 1);
     gl::destroyShader(densityCS);
 
@@ -120,8 +127,8 @@ int main()
     VoxelChunk voxelChunk{ CHUNK_SIZE, 1 };
     voxelChunk.generateDensities(&densityBuilder);
 
-	uint32_t vs = gl::createShader("Assets/Shaders/main.vert");
-	uint32_t fs = gl::createShader("Assets/Shaders/main.frag");
+	uint32_t vs = gl::createShader("Assets/SPIRV/main.vert.spv");
+	uint32_t fs = gl::createShader("Assets/SPIRV/main.frag.spv");
 	uint32_t shaders[] = { vs, fs };
 	unsigned int drawShader = gl::createProgram(shaders, 2);
 	gl::destroyShader(vs);
@@ -138,6 +145,8 @@ int main()
     float dt = (float)timer->getDeltaSeconds();
 
     bool enableWireframe = false;
+    unsigned int globalUBO = gl::createBuffer(nullptr, sizeof(GlobalUniforms), GL_DYNAMIC_STORAGE_BIT);
+
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
@@ -165,10 +174,16 @@ int main()
         }
 
         camera->update(dt);
-
         camera->setAspect(float(gWidth) / float(gHeight));
+
+        gGlobalUniforms.P = camera->getProjectionMatrix();
+        gGlobalUniforms.V = camera->getViewMatrix();
+        gGlobalUniforms.InvVP = glm::inverse(gGlobalUniforms.P * gGlobalUniforms.V);
+        gGlobalUniforms.cameraPosition = glm::vec4(camera->getPosition(), 1.0f);
+        glNamedBufferSubData(globalUBO, 0, sizeof(GlobalUniforms),  &gGlobalUniforms);
+
         renderer->setSize(gWidth, gHeight);
-        renderer->render(camera);
+        renderer->render(camera, globalUBO);
       
         glfwSwapBuffers(window);
         dt = (float)timer->tick();
@@ -178,6 +193,7 @@ int main()
 
         input->update();
     }
+
 
     renderer->destroy();
     fullScreenQuad->destroy();

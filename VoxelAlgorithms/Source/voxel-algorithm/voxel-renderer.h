@@ -8,7 +8,7 @@ class VoxelRenderer {
 
 public:
 	virtual void initialize() = 0;
-	virtual void render(OrbitCamera* camera) = 0;
+	virtual void render(OrbitCamera* camera, unsigned int globalUBO) = 0;
 	virtual void destroy() = 0;
 
 	void setSize(uint32_t width, uint32_t height) {

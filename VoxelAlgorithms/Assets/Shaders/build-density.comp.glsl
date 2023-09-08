@@ -1,4 +1,4 @@
-#version 450
+#version 460
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
@@ -72,8 +72,8 @@ float map(vec3 p)
    float a = 50.0f;
    float f = 0.01f;
 
-   float f2 = 0.02f;
-   float a2 = 20.0f;
+   float f2 = 0.05f;
+   float a2 = 8.0f;
    vec3 wp = p + vec3(noise(p.xyz * f2) * 2.0f - 1.0f,
                       noise(p.yzx * f2) * 2.0f - 1.0f,
                       noise(p.xzy * f2) * 2.0f - 1.0f) * a2;
