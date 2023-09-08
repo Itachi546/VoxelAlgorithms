@@ -1,10 +1,12 @@
 #include "mesh.h"
 #include "timer.h"
 #include "input.h"
+
+#include "camera.h"
 #include "orbit-camera.h"
+#include "first-person-camera.h"
 
 #include "voxel-chunk.h"
-#include "voxel-algorithm/raymarcher.h"
 #include "voxel-algorithm/marchingcube.h"
 #include "voxel-algorithm/marching-cube-cpu.h"
 
@@ -137,10 +139,9 @@ int main()
     VoxelRenderer* renderer = new MarchingCube(&voxelChunk, drawShader);
     renderer->initialize();
 
-    OrbitCamera* camera = new OrbitCamera();
-    camera->setTarget(glm::vec3(CHUNK_SIZE * 0.5f));
-    camera->setZoom(CHUNK_SIZE * 0.5f);
+    FirstPersonCamera* camera = new FirstPersonCamera();
     camera->initialize();
+    camera->setPosition(glm::vec3(CHUNK_SIZE * 0.5f));
 
     float dt = (float)timer->getDeltaSeconds();
 
@@ -154,7 +155,7 @@ int main()
         glViewport(0, 0, gWidth, gHeight);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (input->wasKeyPressed(GLFW_KEY_W))
+        if (input->wasKeyPressed(GLFW_KEY_T))
             enableWireframe = !enableWireframe;
 
         if (enableWireframe)
@@ -164,14 +165,26 @@ int main()
 
 
         if (input->isKeyDown(GLFW_MOUSE_BUTTON_LEFT)) {
-            glm::vec2 delta = input->getMouseDeltaNormalized();
-            camera->changeRotation(delta.y, delta.x);
+            glm::vec2 delta = input->getMouseDelta();
+            camera->rotate(delta.y, -delta.x, dt);
         }
 
-        if (input->isScrolled()) {
-            glm::vec2 scrollOffset = input->getScrollOffset();
-            camera->changeZoom(-scrollOffset.y);
-        }
+        float walkSpeed = 10.0f;
+        if (input->isKeyDown(GLFW_KEY_LEFT_SHIFT))
+            walkSpeed *= 5.0f;
+
+        if (input->isKeyDown(GLFW_KEY_W))
+            camera->walk(-dt * walkSpeed);
+        else if (input->isKeyDown(GLFW_KEY_S))
+            camera->walk(dt * walkSpeed);
+        if (input->isKeyDown(GLFW_KEY_A))
+            camera->strafe(-dt * walkSpeed);
+        else if (input->isKeyDown(GLFW_KEY_D))
+            camera->strafe(dt * walkSpeed);
+        if (input->isKeyDown(GLFW_KEY_1))
+            camera->lift(dt * walkSpeed);
+        else if (input->isKeyDown(GLFW_KEY_2))
+            camera->lift(-dt * walkSpeed);
 
         camera->update(dt);
         camera->setAspect(float(gWidth) / float(gHeight));

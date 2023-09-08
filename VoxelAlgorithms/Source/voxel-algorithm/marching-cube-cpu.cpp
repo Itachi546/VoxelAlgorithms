@@ -3,6 +3,7 @@
 
 #include "../voxel-chunk.h"
 #include "../orbit-camera.h"
+#include "../input.h"
 
 
 static const int CornerAFromEdge[12] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3 };
@@ -33,10 +34,8 @@ void MarchingCubeCpu::initialize()
 	generateMesh();
 }
 
-void MarchingCubeCpu::render(OrbitCamera* camera, unsigned int globalUBO)
+void MarchingCubeCpu::render(Camera* camera, unsigned int globalUBO)
 {
-	glm::mat4 P = camera->getProjectionMatrix();
-	glm::mat4 V = camera->getViewMatrix();
 
 	glUseProgram(mDrawShader);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);

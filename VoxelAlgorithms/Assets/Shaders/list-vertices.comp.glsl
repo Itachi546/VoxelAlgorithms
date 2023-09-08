@@ -91,9 +91,9 @@ vec3 interpolatePosition(vec4 p0, vec4 p1, float isoLevel, out vec3 n) {
    
    vec3 p = p0.xyz + d * (p1.xyz - p0.xyz);
    vec3 v = vec3(noise(p * 4.0), noise(p.yxz * 4.0), noise(p.yzx * 4.0));
-   v += noise(p * 8.0) * 0.5;
-   v += noise(p * 16.0) * 0.25;
-   n = normalize(n + v);
+   // v += noise(p * 8.0) * 0.5;
+   // v +=	noise(p	* 16.0)	* 0.25;
+   n = normalize(n);
 
    return p;
 }

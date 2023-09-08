@@ -1,18 +1,22 @@
 #pragma once
 
 #define GLM_FORCE_XYZW_ONLY
+
+#include "camera.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-class OrbitCamera {
+class OrbitCamera : public Camera {
 
 public:
 	OrbitCamera();
-	void initialize();
 
-	void update(float dt);
+	void initialize() override;
 
-	glm::vec3 getPosition() { return mPosition; }
+	void update(float dt) override;
+
+	glm::vec3 getPosition() const override { return mPosition; }
 
 	void setPosition(const glm::vec3& position) { mPosition = position; }
 
@@ -49,8 +53,8 @@ public:
 		updateProjectionMatrix();
 	}
 
-	glm::mat4 getViewMatrix() { return mViewMatrix; }
-	glm::mat4 getProjectionMatrix() { return mProjectionMatrix; }
+	glm::mat4 getViewMatrix() const override { return mViewMatrix; }
+	glm::mat4 getProjectionMatrix() const override { return mProjectionMatrix; }
 
 private:
 	glm::vec3 mPosition;

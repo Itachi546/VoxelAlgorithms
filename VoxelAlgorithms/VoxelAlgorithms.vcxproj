@@ -150,6 +150,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Source\build-density.h" />
+    <ClInclude Include="Source\camera.h" />
+    <ClInclude Include="Source\first-person-camera.h" />
     <ClInclude Include="Source\gl.h" />
     <ClInclude Include="Source\gpu-noise.h" />
     <ClInclude Include="Source\input.h" />
@@ -159,19 +161,18 @@
     <ClInclude Include="Source\voxel-algorithm\marching-cube-cpu.h" />
     <ClInclude Include="Source\voxel-algorithm\marchingcube-lut.h" />
     <ClInclude Include="Source\voxel-algorithm\marchingcube.h" />
-    <ClInclude Include="Source\voxel-algorithm\raymarcher.h" />
     <ClInclude Include="Source\voxel-algorithm\voxel-renderer.h" />
     <ClInclude Include="Source\voxel-chunk.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\build-density.cpp" />
+    <ClCompile Include="Source\first-person-camera.cpp" />
     <ClCompile Include="Source\gl.cpp" />
     <ClCompile Include="Source\gpu-noise.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\orbit-camera.cpp" />
     <ClCompile Include="Source\voxel-algorithm\marching-cube-cpu.cpp" />
     <ClCompile Include="Source\voxel-algorithm\marchingcube.cpp" />
-    <ClCompile Include="Source\voxel-algorithm\raymarcher.cpp" />
     <ClCompile Include="Source\voxel-chunk.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -193,12 +194,7 @@
     <None Include="Assets\Shaders\noise.comp.glsl">
       <FileType>Document</FileType>
     </None>
-    <CustomBuild Include="Assets\Shaders\raymarch.frag.glsl">
-      <FileType>Document</FileType>
-    </CustomBuild>
-    <CustomBuild Include="Assets\Shaders\raymarch.vert.glsl">
-      <FileType>Document</FileType>
-    </CustomBuild>
+    <None Include="Assets\Shaders\noise.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -11,7 +11,7 @@ class MarchingCubeCpu : public VoxelRenderer {
 
 	void initialize() override;
 
-	void render(OrbitCamera* camera, unsigned int globalUBO) override;
+	void render(Camera* camera, unsigned int globalUBO) override;
 
 	void destroy() override;
 
@@ -26,4 +26,5 @@ private:
 	void generateIndices(std::vector<uint32_t>& indices, const std::vector<glm::uvec3>& splatArray);
 
 	Mesh mMesh;
+
 };

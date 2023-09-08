@@ -30,9 +30,6 @@
     <ClInclude Include="Source\voxel-chunk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\voxel-algorithm\raymarcher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\voxel-algorithm\voxel-renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,6 +51,12 @@
     <ClInclude Include="Source\voxel-algorithm\marching-cube-cpu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\first-person-camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\gpu-noise.cpp">
@@ -71,9 +74,6 @@
     <ClCompile Include="Source\voxel-chunk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\voxel-algorithm\raymarcher.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\voxel-algorithm\marchingcube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -83,10 +83,11 @@
     <ClCompile Include="Source\voxel-algorithm\marching-cube-cpu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\first-person-camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Assets\Shaders\raymarch.vert.glsl" />
-    <CustomBuild Include="Assets\Shaders\raymarch.frag.glsl" />
     <CustomBuild Include="Assets\Shaders\build-density.comp.glsl" />
     <CustomBuild Include="Assets\Shaders\list-indices.comp.glsl" />
     <CustomBuild Include="Assets\Shaders\list-vertices.comp.glsl" />
@@ -95,5 +96,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\noise.comp.glsl" />
+    <None Include="Assets\Shaders\noise.glsl" />
   </ItemGroup>
 </Project>

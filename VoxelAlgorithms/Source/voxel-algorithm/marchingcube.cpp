@@ -100,7 +100,7 @@ void MarchingCube::generateIndices()
 	glUseProgram(0);
 }
 
-void MarchingCube::render(OrbitCamera* camera, unsigned int globalUBO)
+void MarchingCube::render(Camera* camera, unsigned int globalUBO)
 {
 
 	glm::mat4 P = camera->getProjectionMatrix();
