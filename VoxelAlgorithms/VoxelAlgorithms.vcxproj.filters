@@ -97,5 +97,6 @@
   <ItemGroup>
     <None Include="Assets\Shaders\noise.comp.glsl" />
     <None Include="Assets\Shaders\noise.glsl" />
+    <None Include="Assets\Shaders\helpers.glsl" />
   </ItemGroup>
 </Project>

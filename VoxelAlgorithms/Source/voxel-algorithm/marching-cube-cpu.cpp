@@ -27,22 +27,59 @@ const glm::ivec4 EdgeToCellVertex[12] = {
 
 MarchingCubeCpu::MarchingCubeCpu(VoxelChunk* chunk, uint32_t drawShader) : mChunk(chunk), mDrawShader(drawShader)
 {
+	modelMatrixBuffer = gl::createBuffer(nullptr, sizeof(glm::mat4) * 5, GL_DYNAMIC_STORAGE_BIT);
+}
+
+static float getDensity(glm::vec3 p)
+{
+	float d = std::min(p.y - 8.0f, glm::length(p - 16.0f) - 8.0f);
+
+	float d1 = length(glm::vec2(p.x, p.y) - 17.0f) - 6.0f;
+	//d = std::max(d, -d1);
+	return d;
 }
 
 void MarchingCubeCpu::initialize()
 {
-	generateMesh();
+	uint32_t gridSize = mChunk->getNumVoxel();
+	mDensityField.resize(gridSize * gridSize * gridSize);
+	for (uint32_t y = 0; y < gridSize; ++y) {
+		for (uint32_t z = 0; z < gridSize; ++z) {
+			for (uint32_t x = 0; x < gridSize; ++x) {
+				glm::uvec3 uv = glm::vec3(x, y, z);
+				int	index = uv.z * gridSize * gridSize + uv.y * gridSize + uv.x;
+				mDensityField[index] = getDensity(uv);
+			}
+		}
+	}
 }
+
 
 void MarchingCubeCpu::render(Camera* camera, unsigned int globalUBO)
 {
+	update(camera);
+	generateMesh();
 
 	glUseProgram(mDrawShader);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
+	glBindBufferRange(GL_UNIFORM_BUFFER, 1, modelMatrixBuffer, 0, sizeof(glm::mat4));
+
+	glm::mat4 transform = glm::translate(glm::mat4(1.0f), mIntersectionPoint);
+	glNamedBufferSubData(modelMatrixBuffer, 0, sizeof(glm::mat4), &transform);
+	if (mIntersected) {
+		glBindBufferRange(GL_UNIFORM_BUFFER, 1, modelMatrixBuffer, 0, sizeof(glm::mat4));
+		Mesh* sphere = DefaultMesh::getInstance()->getSphere();
+		sphere->draw();
+	}
+
+	transform = glm::mat4(1.0f);
+	glNamedBufferSubData(modelMatrixBuffer, 0, sizeof(glm::mat4), &transform);
 
 	mMesh.draw();
 
 	glUseProgram(0);
+
+	mIntersected = false;
 }
 
 void MarchingCubeCpu::destroy()
@@ -52,6 +89,7 @@ void MarchingCubeCpu::destroy()
 
 void MarchingCubeCpu::generateMesh()
 {
+	mMesh.destroy();
 	uint32_t gridSize = mChunk->getNumVoxel();
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
@@ -62,31 +100,183 @@ void MarchingCubeCpu::generateMesh()
 	mMesh.create(vertices, indices);
 }
 
-static float getDensity(glm::vec3 p)
+glm::vec3 interpolatePosition(glm::vec4 p0, glm::vec4 p1, float isoLevel) {
+	float d0 = p0.w;
+	float d1 = p1.w;
+
+	float d = (isoLevel - d0) / (d1 - d0);
+	return glm::vec3(p0) + d * glm::vec3(p1 - p0);
+}
+
+static bool intersectBox(glm::vec3 r0, glm::vec3 rd, glm::vec3 boxSize, glm::vec3& p0, glm::vec3& p1) {
+
+	glm::vec3 invDir = 1.0f / rd;
+
+	glm::vec3 tmin = -r0 * invDir;
+	glm::vec3 tmax = boxSize * glm::abs(invDir) - r0 * invDir;
+
+	float t0 = std::max(tmin.x, std::max(tmin.y, tmin.z));
+	float t1 = std::min(tmax.x, std::min(tmax.y, tmax.z));
+
+	if (t0 > t1 || t1 < 0.0f) return false;
+
+	if (t0 >= 0.0f)
+		p0 = r0 + t0 * rd;
+	else p0 = r0;
+
+	p1 = r0 + t1 * rd;
+
+	return true;
+}
+
+void MarchingCubeCpu::update(Camera* camera)
 {
-	return std::min(p.y - 8.0f, glm::length(p - 17.0f) - 8.0f);
+	glm::vec2 mousePosNormalized = Input::getInstance()->getMousePos() / glm::vec2(mWidth, mHeight);
+	glm::vec4 ndcCoord = glm::vec4(mousePosNormalized.x * 2.0f - 1.0f, 1.0f - 2.0f * mousePosNormalized.y, -1.0f, 1.0f);
+
+	glm::mat4 invP = glm::inverse(camera->getProjectionMatrix());
+	glm::mat4 invV = glm::inverse(camera->getViewMatrix());
+	glm::vec4 viewPos = invP * ndcCoord;
+	glm::vec4 worldPos = invV * glm::vec4(viewPos.x, viewPos.y, -1.0f, 0.0f);
+
+	glm::vec3 rd = glm::normalize(glm::vec3(worldPos));
+	glm::vec3 r0 = camera->getPosition();
+
+	int gridSize = mChunk->getNumVoxel();
+	
+
+	/*
+	float d = 0.1f;
+	for (int i = 0; i < 256; ++i) {
+		glm::vec3 p = r0 + d * rd;
+		float t = getDensity(p);
+		if (t < 0.001) {
+			mIntersected = true;
+			mIntersectionPoint = p;
+			break;
+		}
+		d += t;
+	}
+
+	int radius = 2;
+	int gridSize = mChunk->getNumVoxel();
+	if (mIntersected) {
+		for (int z = -radius; z <= radius; z++) {
+			for (int y = -radius; y <= radius; y++) {
+				for (int x = -radius; x <= radius; x++) {
+					glm::ivec3 p = glm::ivec3(glm::floor(mIntersectionPoint + glm::vec3(x, y, z)));
+					if (p.x < 0 || p.x > gridSize - 1 || p.y < 0 || p.y > gridSize - 1 || p.z < 0 || p.z > gridSize - 1) continue;
+					int	index = p.z * gridSize * gridSize + p.y * gridSize + p.x;
+					float brush = glm::length(mIntersectionPoint - glm::vec3(p)) - float(radius);
+					mDensityField[index] = std::max(mDensityField[index], -brush);
+				}
+			}
+		}
+	}
+	*/
+	//glm::vec3 p0, p1;
+	//if (!intersectBox(r0, rd, glm::vec3(gridSize - 1), p0, p1)) return;
+	//r0 = p0;
+
+	// Fast Ray Voxel Traversal
+	glm::ivec3 ip = glm::floor(r0);
+	glm::ivec3 stepSize = glm::sign(rd);
+	glm::vec3 tMax = (glm::vec3(ip + stepSize) - r0) / rd;
+	glm::vec3 tDelta = glm::vec3(stepSize) / rd;
+
+	float maxDist = 100.0;// glm::length(p1 - p0);
+	float t = glm::max(tMax.x, glm::max(tMax.y, tMax.z));
+
+	float lastDensity = 0.0f;
+	glm::ivec3 lastPosition = ip;
+
+	while (t < maxDist) {
+
+		if (tMax.x < tMax.y) {
+			if (tMax.x < tMax.z) {
+				ip.x += stepSize.x;
+				tMax.x += tDelta.x;
+				t = tMax.x;
+			}
+			else {
+				ip.z += stepSize.z;
+				tMax.z += tDelta.z;
+				t = tMax.z;
+			}
+		}
+		else {
+			if (tMax.y < tMax.z) {
+				ip.y += stepSize.y;
+				tMax.y += tDelta.y;
+				t = tMax.y;
+			}
+			else {
+				ip.z += stepSize.z;
+				tMax.z += tDelta.z;
+				t = tMax.z;
+			}
+		}
+		if (ip.x < 0 || ip.x > gridSize - 1 || ip.y < 0 || ip.y > gridSize - 1 || ip.z < 0 || ip.z > gridSize - 1) break;
+
+		int	index = ip.z * gridSize * gridSize + ip.y * gridSize + ip.x;
+		float density = mDensityField[index];
+
+		if (density <= 0.0001f) {
+			mIntersected = true;
+			mIntersectionPoint = interpolatePosition(glm::vec4(lastPosition, lastDensity), glm::vec4(ip, density), 0.0001f);
+			break;
+		}
+
+		lastPosition = ip;
+		lastDensity = density;
+	}
+
+	int radius = 2;
+	if (mIntersected && Input::getInstance()->wasKeyPressed(1)) {
+		for (int z = -radius; z <= radius; z++) {
+			for (int y = -radius; y <= radius; y++) {
+				for (int x = -radius; x <= radius; x++) {
+					glm::ivec3 p = glm::ivec3(glm::floor(mIntersectionPoint + glm::vec3(x, y, z)));
+					if (p.x < 0 || p.x > gridSize - 1 || p.y < 0 || p.y > gridSize - 1 || p.z < 0 || p.z > gridSize - 1) continue;
+					int	index = p.z * gridSize * gridSize + p.y * gridSize + p.x;
+					float brush = glm::length(mIntersectionPoint - glm::vec3(p)) - float(radius);
+					mDensityField[index] = std::max(mDensityField[index], -brush);
+				}
+			}
+		}
+	}
+
 }
 
-static glm::vec4 createPoint(glm::vec3 p) {
-	return glm::vec4(p.x, p.y, p.z, getDensity(p));
+glm::vec4 MarchingCubeCpu::createPoint(glm::ivec3 p) {
+	const int gridSize = mChunk->getNumVoxel();
+	int	index = p.z * gridSize * gridSize + p.y * gridSize + p.x;
+	return glm::vec4(p.x, p.y, p.z, mDensityField[index]);
 }
 
-static glm::vec3 calculateNormal(glm::vec3 p) {
+static glm::vec3 calculateNormal(glm::ivec3 p, const std::vector<float>& densityField, int gridSize) {
+
+	auto density = [&](const glm::ivec3& ip) {
+		int index = ip.z * gridSize * gridSize + ip.y * gridSize + ip.x;
+		return densityField[index];
+		};
+
+	float d = density(p);
 	return glm::normalize(glm::vec3(
-		getDensity(p + glm::vec3(1.0f, 0.0f, 0.0f)) - getDensity(p - glm::vec3(1.0f, 0.0f, 0.0f)),
-		getDensity(p + glm::vec3(0.0f, 1.0f, 0.0f)) - getDensity(p - glm::vec3(0.0f, 1.0f, 0.0f)),
-		getDensity(p + glm::vec3(0.0f, 0.0f, 0.0f)) - getDensity(p - glm::vec3(0.0f, 0.0f, 1.0f))
+		density(p + glm::ivec3(1, 0, 0)) - d,
+		density(p + glm::ivec3(0, 1, 0)) - d,
+		density(p + glm::ivec3(0, 0, 0)) - d
 	));
 }
 
-glm::vec3 interpolatePosition(glm::vec4 p0, glm::vec4 p1, float isoLevel, glm::vec3& n) {
+glm::vec3 interpolatePosition(glm::vec4 p0, glm::vec4 p1, float isoLevel, glm::vec3& n, const std::vector<float>& densityField, int gridSize) {
 	float d0 = p0.w;
 	float d1 = p1.w;
 
 	float d = (isoLevel - d0) / (d1 - d0);
 
-	glm::vec3 n0 = calculateNormal(p0);
-	glm::vec3 n1 = calculateNormal(p1);
+	glm::vec3 n0 = calculateNormal(p0, densityField, gridSize);
+	glm::vec3 n1 = calculateNormal(p1, densityField, gridSize);
 	n = glm::normalize(n0 + d * (n1 - n0));
 	return glm::vec3(p0) + d * glm::vec3(p1 - p0);
 }
@@ -96,9 +286,9 @@ void MarchingCubeCpu::generateVertices(std::vector<Vertex>& vertices, std::vecto
 	uint32_t gridSize = mChunk->getNumVoxel() - 1;
 	uint32_t totalVertices = 0;
 
-	for (uint32_t y = 0; y <= gridSize; ++y) {
-		for (uint32_t z = 0; z <= gridSize; ++z) {
-			for (uint32_t x = 0; x <= gridSize; ++x) {
+	for (uint32_t y = 0; y < gridSize; ++y) {
+		for (uint32_t z = 0; z < gridSize; ++z) {
+			for (uint32_t x = 0; x < gridSize; ++x) {
 				glm::uvec3 uv = glm::vec3(x, y, z);
 				// 8 corners of the current cube
 				glm::vec4 cubeCorners[8] = {
@@ -136,7 +326,7 @@ void MarchingCubeCpu::generateVertices(std::vector<Vertex>& vertices, std::vecto
 					if (e == -1 || (e != 0 && e != 3 && e != 8) || values[e / 3] != ~0u) continue;
 
 					glm::vec3 n = glm::vec3(0.0f, 1.0f, 0.0f);
-					glm::vec3 p = interpolatePosition(cubeCorners[CornerAFromEdge[e]], cubeCorners[CornerBFromEdge[e]], isoLevel, n);
+					glm::vec3 p = interpolatePosition(cubeCorners[CornerAFromEdge[e]], cubeCorners[CornerBFromEdge[e]], isoLevel, n, mDensityField, gridSize);
 
 					vertices.emplace_back(Vertex{ p, n });
 
@@ -164,9 +354,9 @@ void MarchingCubeCpu::generateIndices(std::vector<uint32_t>& indices, const std:
 	uint32_t gridSize = mChunk->getNumVoxel() - 1;
 	uint32_t totalTriangle = 0;
 
-	for (uint32_t y = 0; y < gridSize; ++y) {
-		for (uint32_t z = 0; z < gridSize; ++z) {
-			for (uint32_t x = 0; x < gridSize; ++x) {
+	for (uint32_t y = 0; y < gridSize - 1; ++y) {
+		for (uint32_t z = 0; z < gridSize - 1; ++z) {
+			for (uint32_t x = 0; x < gridSize - 1; ++x) {
 
 				glm::ivec3 uv = glm::ivec3(x, y, z);
 				// 8 corners of the current cube

@@ -141,7 +141,7 @@ int main()
 
     FirstPersonCamera* camera = new FirstPersonCamera();
     camera->initialize();
-    camera->setPosition(glm::vec3(CHUNK_SIZE * 0.5f));
+    camera->setPosition(glm::vec3(0.0f, CHUNK_SIZE, -CHUNK_SIZE));
 
     float dt = (float)timer->getDeltaSeconds();
 

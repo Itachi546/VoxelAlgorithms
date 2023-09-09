@@ -2,7 +2,9 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
-const int VOXEL_COUNT = 256;
+#extension GL_GOOGLE_include_directive : require
+#include "helpers.glsl"
+
 struct Triangulation {
   int edges[16];
 };
@@ -28,34 +30,15 @@ float getDensity(ivec3 uv) {
   return imageLoad(uNoiseTexture, uv).r;
 }
 
-const int cornerAFromEdge[12] = int[12] (0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3);
-const int cornerBFromEdge[12] = int[12] (1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7);
-
 vec4 createPoint(ivec3 p) {
   return vec4(p.x, p.y, p.z, getDensity(p));
 }
 
-// Given a edge 0..11, it returns the parent cell where the vertex is generated 
-const ivec4 edgeToCellVertex[12] = ivec4[12](
-    ivec4(0, 0,	0, 0), // 0,
-    ivec4(1, 0, 0, 1), // X
-    ivec4(0, 0, 1, 0), // Z
-    ivec4(0, 0, 0, 1), // 0
-    ivec4(0, 1, 0, 0),  // Y
-    ivec4(1, 1, 0, 1),  // XY
-    ivec4(0, 1, 1, 0), // YZ
-    ivec4(0, 1, 0, 1), // Y
-    ivec4(0, 0, 0, 2), // 0
-    ivec4(1, 0, 0, 2), // X
-    ivec4(1, 0, 1, 2), // XZ
-	ivec4(0, 0, 1, 2)  // Z
-);
-
 uint getVertexIndex(ivec3 uv, int edge) {
-    ivec4 offset = edgeToCellVertex[edge];
+    ivec4 offset = EdgeToCellVertex[edge];
     uv += offset.xyz;
 
-    int splatIndex = uv.z * (VOXEL_COUNT + 1) * (VOXEL_COUNT + 1) + uv.y * (VOXEL_COUNT + 1) + uv.x ;
+    int splatIndex = getSplatIndex(uv);
     return splatBuffer[splatIndex][offset.w];
 }
 

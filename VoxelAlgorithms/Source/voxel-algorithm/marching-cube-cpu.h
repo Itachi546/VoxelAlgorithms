@@ -20,11 +20,20 @@ class MarchingCubeCpu : public VoxelRenderer {
 private:
 	VoxelChunk* mChunk;
 	uint32_t mDrawShader;
+	uint32_t modelMatrixBuffer;
+
+	std::vector<float> mDensityField;
 
 	void generateMesh();
 	void generateVertices(std::vector<Vertex>& vertices, std::vector<glm::uvec3>& splatArray);
 	void generateIndices(std::vector<uint32_t>& indices, const std::vector<glm::uvec3>& splatArray);
 
+	glm::vec4 createPoint(glm::ivec3 p);
+
+	void update(Camera* camera);
+
 	Mesh mMesh;
 
+	bool mIntersected = false;
+	glm::vec3 mIntersectionPoint = glm::vec3(0.0f);
 };

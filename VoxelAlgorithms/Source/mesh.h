@@ -4,6 +4,7 @@
 
 #define GLM_FORCE_XYZW_ONLY
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
 struct Vertex {
@@ -26,8 +27,8 @@ struct Mesh {
 
     void create(std::vector<Vertex> vertices, std::vector<uint32_t> indices)
     {
-        vertexBuffer = gl::createBuffer(vertices.data(), (uint32_t)vertices.size() * sizeof(Vertex), 0);
-        indexBuffer = gl::createBuffer(indices.data(), (uint32_t)indices.size() * sizeof(uint32_t), 0);
+        vertexBuffer = gl::createBuffer(vertices.data(), (uint32_t)vertices.size() * sizeof(Vertex), GL_DYNAMIC_STORAGE_BIT);
+        indexBuffer = gl::createBuffer(indices.data(), (uint32_t)indices.size() * sizeof(uint32_t), GL_DYNAMIC_STORAGE_BIT);
         indexCount = (uint32_t)indices.size();
 
         vao = gl::createVertexArray();
@@ -69,6 +70,7 @@ struct Mesh {
         gl::destroyVertexArray(vao);
         gl::destroyBuffer(vertexBuffer);
         gl::destroyBuffer(indexBuffer);
+        indexCount = 0;
     }
 
 
@@ -109,5 +111,83 @@ private:
 
     Mesh mQuad;
     bool mInitialized = false;
+};
+
+class DefaultMesh {
+
+public:
+    static DefaultMesh* getInstance() {
+        static DefaultMesh* defaultMesh = new DefaultMesh();
+        return defaultMesh;
+    }
+
+    Mesh* getSphere() {
+        return &mSphere;
+    }
+
+private:
+    Mesh mSphere;
+
+    DefaultMesh() {
+        initializeSphere();
+    }
+
+    void initializeSphere(int sectorCount = 16, int stackCount = 8) {
+
+        float radius = 1.0f;
+        float x, y, z, xy;
+        float nx, ny, nz, lengthInv = 1.0f / radius;
+
+        float sectorStep = 2 * glm::pi<float>() / sectorCount;
+        float stackStep = glm::pi<float>() / stackCount;
+        float sectorAngle, stackAngle;
+
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+        for (int i = 0; i <= stackCount; ++i)
+        {
+            stackAngle = glm::pi<float>() / 2 - i * stackStep;
+            xy = radius * cosf(stackAngle);
+            z = radius * sinf(stackAngle);
+
+            for (int j = 0; j <= sectorCount; ++j)
+            {
+                sectorAngle = j * sectorStep;
+
+                x = xy * cosf(sectorAngle);
+                y = xy * sinf(sectorAngle);
+
+                nx = x * lengthInv;
+                ny = y * lengthInv;
+                nz = z * lengthInv;
+                vertices.emplace_back(Vertex{ glm::vec3(x, y, z), glm::vec3(nx, ny, nz) });
+            }
+        }
+
+        int k1, k2;
+        for (int i = 0; i < stackCount; ++i)
+        {
+            k1 = i * (sectorCount + 1);
+            k2 = k1 + sectorCount + 1;
+            for (int j = 0; j < sectorCount; ++j, ++k1, ++k2)
+            {
+                if (i != 0)
+                {
+                    indices.push_back(k1);
+                    indices.push_back(k2);
+                    indices.push_back(k1 + 1);
+                }
+
+                if (i != (stackCount - 1))
+                {
+                    indices.push_back(k1 + 1);
+                    indices.push_back(k2);
+                    indices.push_back(k2 + 1);
+                }
+            }
+        }
+
+        mSphere.create(vertices, indices);
+    }
 };
 

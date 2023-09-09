@@ -40,6 +40,7 @@ void MarchingCube::initialize()
 	std::memset(mCountBufferPtr, 0, sizeof(uint32_t) * 8);
 	assert(mCountBufferPtr != nullptr);
 
+	mModelMatrixBuffer = gl::createBuffer(nullptr, sizeof(glm::mat4), GL_DYNAMIC_STORAGE_BIT);
 
 	uint32_t listVerticesCS = gl::createShader("Assets/SPIRV/list-vertices.comp.spv");
 	mListVerticesShader = gl::createProgram(&listVerticesCS, 1);
@@ -48,8 +49,6 @@ void MarchingCube::initialize()
 	uint32_t listIndicesCS = gl::createShader("Assets/SPIRV/list-indices.comp.spv");
 	mListIndicesShader = gl::createProgram(&listIndicesCS, 1);
 	gl::destroyShader(listIndicesCS);
-
-	generateMesh();
 }
 
 void MarchingCube::generateMesh()
@@ -63,7 +62,7 @@ void MarchingCube::generateMesh()
 	mVertexCount = mCountBufferPtr[0];
 	mTriangleCount = mCountBufferPtr[4];
 	std::memset(mCountBufferPtr, 0, sizeof(uint32_t) * 8);
-	std::cout << "Vertices[ " << mVertexCount << " ]" << " Triangles[ " << mTriangleCount << " ]" << std::endl;
+	//std::cout << "Vertices[ " << mVertexCount << " ]" << " Triangles[ " << mTriangleCount << " ]" << std::endl;
 }
 
 void MarchingCube::generateVertices()
@@ -102,18 +101,20 @@ void MarchingCube::generateIndices()
 
 void MarchingCube::render(Camera* camera, unsigned int globalUBO)
 {
+	generateMesh();
 
-	glm::mat4 P = camera->getProjectionMatrix();
-	glm::mat4 V = camera->getViewMatrix();
+	glm::mat4 M = glm::mat4(1.0f);
+	glNamedBufferSubData(mModelMatrixBuffer, 0, sizeof(glm::mat4), &M);
 
 	glUseProgram(mDrawShader);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, mModelMatrixBuffer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (void*)(sizeof(float) * 4));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 	glDrawElements(GL_TRIANGLES, mTriangleCount * 3, GL_UNSIGNED_INT, 0);

@@ -1,4 +1,4 @@
-#version 430
+version 430
 
 #compute
 // implementation from https://mrl.nyu.edu/~perlin/noise/

@@ -191,6 +191,7 @@
     <CustomBuild Include="Assets\Shaders\main.vert.glsl">
       <FileType>Document</FileType>
     </CustomBuild>
+    <None Include="Assets\Shaders\helpers.glsl" />
     <None Include="Assets\Shaders\noise.comp.glsl">
       <FileType>Document</FileType>
     </None>

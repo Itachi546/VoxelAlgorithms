@@ -2,12 +2,10 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
-const int VOXEL_COUNT = 256;
+#extension GL_GOOGLE_include_directive : require
 
-struct Vertex {
-   float p[4];
-   float n[3];
-};
+#include "helpers.glsl"
+#include "noise.glsl"
 
 struct Triangulation {
   int edges[16];
@@ -35,40 +33,11 @@ float getDensity(ivec3 uv) {
   return imageLoad(uNoiseTexture, uv).r;
 }
 
-const int cornerAFromEdge[12] = int[12] (0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3);
-const int cornerBFromEdge[12] = int[12] (1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7);
-
 vec4 createPoint(ivec3 p) {
   return vec4(p.x, p.y, p.z, getDensity(p));
 }
 
 const ivec2 E = ivec2(1, 0);
-float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
-vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
-vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
-
-float noise(vec3 p){
-    vec3 a = floor(p);
-    vec3 d = p - a;
-    d = d * d * (3.0 - 2.0 * d);
-
-    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
-    vec4 k1 = perm(b.xyxy);
-    vec4 k2 = perm(k1.xyxy + b.zzww);
-
-    vec4 c = k2 + a.zzzz;
-    vec4 k3 = perm(c);
-    vec4 k4 = perm(c + 1.0);
-
-    vec4 o1 = fract(k3 * (1.0 / 41.0));
-    vec4 o2 = fract(k4 * (1.0 / 41.0));
-
-    vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
-    vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
-
-	return o4.y * d.y + o4.x *	(1.0 - d.y);
-}
-
 vec3 calculateNormal(vec3 p) {
 
    ivec3 ip = ivec3(p);
@@ -90,9 +59,6 @@ vec3 interpolatePosition(vec4 p0, vec4 p1, float isoLevel, out vec3 n) {
    n = n0 + d * (n1 - n0); 
    
    vec3 p = p0.xyz + d * (p1.xyz - p0.xyz);
-   vec3 v = vec3(noise(p * 4.0), noise(p.yxz * 4.0), noise(p.yzx * 4.0));
-   // v += noise(p * 8.0) * 0.5;
-   // v +=	noise(p	* 16.0)	* 0.25;
    n = normalize(n);
 
    return p;
@@ -138,11 +104,10 @@ void main() {
        if(values[e / 3] != ~0u) continue;
 
        vec3 n = vec3(0.0f);
-   	   vec3 p = interpolatePosition(cubeCorners[cornerAFromEdge[e]], cubeCorners[cornerBFromEdge[e]], isoLevel, n);
+   	   vec3 p = interpolatePosition(cubeCorners[CornerAFromEdge[e]], cubeCorners[CornerBFromEdge[e]], isoLevel, n);
 
        Vertex vertex;
        vertex.p[0] = p.x, vertex.p[1] = p.y, vertex.p[2] = p.z;
-       vertex.p[3] = 0.0f;
        vertex.n[0] = n.x, vertex.n[1] = n.y, vertex.n[2] = n.z;
 
 
