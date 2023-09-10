@@ -26,6 +26,8 @@ layout(std430, binding = 4) readonly buffer SplatBuffer {
    uvec4 splatBuffer[];
 };
 
+layout(location = 2) uniform int uVoxelCount;
+
 float getDensity(ivec3 uv) {
   return imageLoad(uNoiseTexture, uv).r;
 }
@@ -38,7 +40,7 @@ uint getVertexIndex(ivec3 uv, int edge) {
     ivec4 offset = EdgeToCellVertex[edge];
     uv += offset.xyz;
 
-    int splatIndex = getSplatIndex(uv);
+    int splatIndex = getSplatIndex(uv, uVoxelCount);
     return splatBuffer[splatIndex][offset.w];
 }
 

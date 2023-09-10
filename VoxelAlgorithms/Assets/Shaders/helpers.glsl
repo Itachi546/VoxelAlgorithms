@@ -6,8 +6,6 @@ struct Vertex {
 const int CornerAFromEdge[12] = int[12] (0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3);
 const int CornerBFromEdge[12] = int[12] (1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7);
 
-const int VOXEL_COUNT = 256;
-
 // Given a edge 0..11, it returns the parent cell where the vertex is generated 
 const ivec4 EdgeToCellVertex[12] = ivec4[12](
     ivec4(0, 0,	0, 0), // 0,
@@ -24,8 +22,8 @@ const ivec4 EdgeToCellVertex[12] = ivec4[12](
 	ivec4(0, 0, 1, 2)  // Z
 );
 
-int getSplatIndex(ivec3 uv) {
-  return uv.z * (VOXEL_COUNT + 1) * (VOXEL_COUNT + 1) + uv.y * (VOXEL_COUNT + 1) + uv.x;
+int getSplatIndex(ivec3 uv, int voxelCount) {
+  return uv.z * (voxelCount + 1) * (voxelCount + 1) + uv.y * (voxelCount + 1) + uv.x;
 }
 
 const int AO_DIR_COUNT = 32;

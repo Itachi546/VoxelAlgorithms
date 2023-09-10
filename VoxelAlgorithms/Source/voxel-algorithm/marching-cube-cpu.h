@@ -20,7 +20,6 @@ class MarchingCubeCpu : public VoxelRenderer {
 private:
 	VoxelChunk* mChunk;
 	uint32_t mDrawShader;
-	uint32_t modelMatrixBuffer;
 
 	std::vector<float> mDensityField;
 

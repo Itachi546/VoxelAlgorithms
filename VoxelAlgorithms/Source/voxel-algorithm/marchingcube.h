@@ -23,7 +23,6 @@ private:
 	uint32_t mTriLUTBuffer;
 	uint32_t mVertexBuffer;
 	uint32_t mIndexBuffer;
-	uint32_t mModelMatrixBuffer;
 
 	uint32_t mCountBuffer;
 	uint32_t* mCountBufferPtr;

@@ -133,6 +133,7 @@ int main()
 	uint32_t fs = gl::createShader("Assets/SPIRV/main.frag.spv");
 	uint32_t shaders[] = { vs, fs };
 	unsigned int drawShader = gl::createProgram(shaders, 2);
+    glm::vec3 color = glm::vec3(1.0f, 0.0f, 1.0f);
 	gl::destroyShader(vs);
 	gl::destroyShader(fs);
 

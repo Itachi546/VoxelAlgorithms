@@ -27,7 +27,6 @@ const glm::ivec4 EdgeToCellVertex[12] = {
 
 MarchingCubeCpu::MarchingCubeCpu(VoxelChunk* chunk, uint32_t drawShader) : mChunk(chunk), mDrawShader(drawShader)
 {
-	modelMatrixBuffer = gl::createBuffer(nullptr, sizeof(glm::mat4) * 5, GL_DYNAMIC_STORAGE_BIT);
 }
 
 static float getDensity(glm::vec3 p)
@@ -62,19 +61,16 @@ void MarchingCubeCpu::render(Camera* camera, unsigned int globalUBO)
 
 	glUseProgram(mDrawShader);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
-	glBindBufferRange(GL_UNIFORM_BUFFER, 1, modelMatrixBuffer, 0, sizeof(glm::mat4));
 
-	glm::mat4 transform = glm::translate(glm::mat4(1.0f), mIntersectionPoint);
-	glNamedBufferSubData(modelMatrixBuffer, 0, sizeof(glm::mat4), &transform);
 	if (mIntersected) {
-		glBindBufferRange(GL_UNIFORM_BUFFER, 1, modelMatrixBuffer, 0, sizeof(glm::mat4));
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), mIntersectionPoint);
+		glUniformMatrix4fv(0, 1, GL_FALSE, &transform[0][0]);
 		Mesh* sphere = DefaultMesh::getInstance()->getSphere();
 		sphere->draw();
 	}
 
-	transform = glm::mat4(1.0f);
-	glNamedBufferSubData(modelMatrixBuffer, 0, sizeof(glm::mat4), &transform);
-
+	glm::mat4 M = glm::mat4(1.0f);
+	glUniformMatrix4fv(0, 1, GL_FALSE, &M[0][0]);
 	mMesh.draw();
 
 	glUseProgram(0);

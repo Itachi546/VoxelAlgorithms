@@ -15,9 +15,7 @@ layout(std430, binding = 0) uniform GlobalData {
    vec4 cameraPosition;
 };
 
-layout(std430, binding = 1) uniform ModelMatrix {
-   mat4 M;
-};
+layout(location = 0) uniform mat4 M;
 
 void main() {
   gl_Position = P * V * M * vec4(position.xyz, 1.0f);

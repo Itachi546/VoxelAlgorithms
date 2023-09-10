@@ -40,8 +40,6 @@ void MarchingCube::initialize()
 	std::memset(mCountBufferPtr, 0, sizeof(uint32_t) * 8);
 	assert(mCountBufferPtr != nullptr);
 
-	mModelMatrixBuffer = gl::createBuffer(nullptr, sizeof(glm::mat4), GL_DYNAMIC_STORAGE_BIT);
-
 	uint32_t listVerticesCS = gl::createShader("Assets/SPIRV/list-vertices.comp.spv");
 	mListVerticesShader = gl::createProgram(&listVerticesCS, 1);
 	gl::destroyShader(listVerticesCS);
@@ -49,6 +47,8 @@ void MarchingCube::initialize()
 	uint32_t listIndicesCS = gl::createShader("Assets/SPIRV/list-indices.comp.spv");
 	mListIndicesShader = gl::createProgram(&listIndicesCS, 1);
 	gl::destroyShader(listIndicesCS);
+
+	generateMesh();
 }
 
 void MarchingCube::generateMesh()
@@ -69,7 +69,7 @@ void MarchingCube::generateVertices()
 {
 	uint32_t gridSize = mChunk->getNumVoxel() - 1;
 	glUseProgram(mListVerticesShader);
-	glUniform1i(glGetUniformLocation(mListVerticesShader, "uVoxelCount"), gridSize);
+	glUniform1i(2, gridSize);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, mTriLUTBuffer);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mVertexBuffer);
 	glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, mCountBuffer, 0, sizeof(uint32_t));
@@ -88,7 +88,7 @@ void MarchingCube::generateIndices()
 
 	// List indices
 	glUseProgram(mListIndicesShader);
-	glUniform1i(glGetUniformLocation(mListIndicesShader, "uVoxelCount"), gridSize);
+	glUniform1i(2, gridSize);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, mTriLUTBuffer);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mIndexBuffer);
 	glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, mCountBuffer, sizeof(uint32_t) * 4, sizeof(uint32_t));
@@ -101,14 +101,12 @@ void MarchingCube::generateIndices()
 
 void MarchingCube::render(Camera* camera, unsigned int globalUBO)
 {
-	generateMesh();
 
 	glm::mat4 M = glm::mat4(1.0f);
-	glNamedBufferSubData(mModelMatrixBuffer, 0, sizeof(glm::mat4), &M);
 
 	glUseProgram(mDrawShader);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 1, mModelMatrixBuffer);
+	glUniformMatrix4fv(0, 1, GL_FALSE, &M[0][0]);
 
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	glEnableVertexAttribArray(0);
