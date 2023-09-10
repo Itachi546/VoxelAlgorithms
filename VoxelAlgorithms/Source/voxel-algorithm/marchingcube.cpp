@@ -1,10 +1,8 @@
 #include "marchingcube.h"
 #include "marchingcube-lut.h"
-#include "../orbit-camera.h"
 
-#define GLM_FORCE_XYZW_ONLY
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "../orbit-camera.h"
+#include "../glm-includes.h"
 
 MarchingCube::MarchingCube(VoxelChunk* chunk, unsigned int drawShader) : 
 	mChunk(chunk),

@@ -1,6 +1,6 @@
 #include "first-person-camera.h"
 
-#include <glm/gtc/matrix_transform.hpp>
+#include "glm-includes.h"
 #include <glm/gtx/euler_angles.hpp>
 
 FirstPersonCamera::FirstPersonCamera()

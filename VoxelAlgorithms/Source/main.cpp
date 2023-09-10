@@ -12,7 +12,6 @@
 
 #include <iostream>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 
 uint32_t gWidth = 1360;
 uint32_t gHeight = 769;

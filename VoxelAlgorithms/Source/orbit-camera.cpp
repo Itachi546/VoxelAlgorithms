@@ -1,9 +1,6 @@
 #include "orbit-camera.h"
 #include "input.h"
 
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 OrbitCamera::OrbitCamera() :
 	mPosition(glm::vec3(64.0f)),
 	mTarget(glm::vec3(32.0f)),
