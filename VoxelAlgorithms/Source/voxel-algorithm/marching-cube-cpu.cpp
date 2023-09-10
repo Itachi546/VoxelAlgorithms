@@ -1,4 +1,5 @@
 #include "marching-cube-cpu.h"
+/*
 #include "marchingcube-lut.h"
 
 #include "../voxel-chunk.h"
@@ -173,7 +174,7 @@ void MarchingCubeCpu::update(Camera* camera)
 	//glm::vec3 p0, p1;
 	//if (!intersectBox(r0, rd, glm::vec3(gridSize - 1), p0, p1)) return;
 	//r0 = p0;
-
+    /*
 	// Fast Ray Voxel Traversal
 	glm::ivec3 ip = glm::floor(r0);
 	glm::ivec3 stepSize = glm::sign(rd);
@@ -404,3 +405,4 @@ void MarchingCubeCpu::generateIndices(std::vector<uint32_t>& indices, const std:
 		}
 	}
 }
+*/

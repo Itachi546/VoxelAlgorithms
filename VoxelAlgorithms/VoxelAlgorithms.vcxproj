@@ -149,10 +149,11 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\build-density.h" />
+    <ClInclude Include="Source\chunk\build-density.h" />
     <ClInclude Include="Source\camera.h" />
     <ClInclude Include="Source\first-person-camera.h" />
     <ClInclude Include="Source\gl.h" />
+    <ClInclude Include="Source\glm-includes.h" />
     <ClInclude Include="Source\gpu-noise.h" />
     <ClInclude Include="Source\input.h" />
     <ClInclude Include="Source\mesh.h" />
@@ -161,11 +162,11 @@
     <ClInclude Include="Source\voxel-algorithm\marching-cube-cpu.h" />
     <ClInclude Include="Source\voxel-algorithm\marchingcube-lut.h" />
     <ClInclude Include="Source\voxel-algorithm\marchingcube.h" />
-    <ClInclude Include="Source\voxel-algorithm\voxel-renderer.h" />
-    <ClInclude Include="Source\voxel-chunk.h" />
+    <ClInclude Include="Source\voxel-algorithm\voxel-generator.h" />
+    <ClInclude Include="Source\chunk\chunk.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\build-density.cpp" />
+    <ClCompile Include="Source\chunk\build-density.cpp" />
     <ClCompile Include="Source\first-person-camera.cpp" />
     <ClCompile Include="Source\gl.cpp" />
     <ClCompile Include="Source\gpu-noise.cpp" />
@@ -173,7 +174,7 @@
     <ClCompile Include="Source\orbit-camera.cpp" />
     <ClCompile Include="Source\voxel-algorithm\marching-cube-cpu.cpp" />
     <ClCompile Include="Source\voxel-algorithm\marchingcube.cpp" />
-    <ClCompile Include="Source\voxel-chunk.cpp" />
+    <ClCompile Include="Source\chunk\chunk.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Assets\Shaders\build-density.comp.glsl">

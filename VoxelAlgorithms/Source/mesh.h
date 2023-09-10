@@ -15,6 +15,31 @@ struct Vertex2D {
     glm::vec2 position;
 };
 
+struct GpuMesh {
+    uint32_t vertexBuffer;
+    uint32_t indexBuffer;
+
+    uint32_t vertexCount;
+    uint32_t indexCount;
+
+    void create(uint32_t vertexSize, uint32_t indexSize) {
+		vertexBuffer = gl::createBuffer(nullptr, vertexSize, 0);
+		indexBuffer = gl::createBuffer(nullptr, indexSize, 0);
+    }
+
+    void draw() {
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+    }
+};
+
 struct Mesh {
     uint32_t vertexBuffer;
     uint32_t indexBuffer;

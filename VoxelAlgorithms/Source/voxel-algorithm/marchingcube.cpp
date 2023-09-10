@@ -1,36 +1,17 @@
 #include "marchingcube.h"
 #include "marchingcube-lut.h"
 
-#include "../orbit-camera.h"
 #include "../glm-includes.h"
+#include "../mesh.h"
 
-MarchingCube::MarchingCube(VoxelChunk* chunk, unsigned int drawShader) : 
-	mChunk(chunk),
-	mTriLUTBuffer(~0u),
-	mVertexBuffer(~0u),
-	mCountBuffer(~0u),
-	mCountBufferPtr(0),
-	mListVerticesShader(~0u),
-	mListIndicesShader(~0u),
-	mSplatBuffer(~0u),
-	mVertexCount(0),
-	mDrawShader(drawShader)
-{
-}
+#include <iostream>
 
-void MarchingCube::initialize()
+void MarchingCube::initialize(uint32_t numVoxels)
 {
+	// Initialize Buffers
 	mTriLUTBuffer = gl::createBuffer(MarchingCubeLUT::triTable, sizeof(MarchingCubeLUT::triTable), 0);
 
-	uint32_t gridSize = mChunk->getNumVoxel();
-	uint32_t gridCount = (gridSize - 1) * (gridSize - 1) * (gridSize - 1);
-	const uint32_t vertexBufferSize = sizeof(float) * 6 * 3 * gridSize * gridSize * gridSize;
-	mVertexBuffer = gl::createBuffer(nullptr, vertexBufferSize, GL_DYNAMIC_STORAGE_BIT);
-
-	const uint32_t indexBufferSize = sizeof(uint32_t) * 15 * gridCount;
-	mIndexBuffer = gl::createBuffer(nullptr, indexBufferSize, GL_DYNAMIC_STORAGE_BIT);
-
-	const uint32_t splatBufferSize = gridSize * gridSize * gridSize * 4 * sizeof(uint32_t);
+	const uint32_t splatBufferSize = numVoxels * numVoxels * numVoxels * 4 * sizeof(uint32_t);
 	mSplatBuffer = gl::createBuffer(nullptr, splatBufferSize, GL_DYNAMIC_STORAGE_BIT);
 
 	mCountBuffer = gl::createBuffer(nullptr, sizeof(uint32_t) * 8, GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
@@ -38,65 +19,95 @@ void MarchingCube::initialize()
 	std::memset(mCountBufferPtr, 0, sizeof(uint32_t) * 8);
 	assert(mCountBufferPtr != nullptr);
 
+	// Initialize Shaders
 	uint32_t listVerticesCS = gl::createShader("Assets/SPIRV/list-vertices.comp.spv");
 	mListVerticesShader = gl::createProgram(&listVerticesCS, 1);
 	gl::destroyShader(listVerticesCS);
+	glProgramUniform1i(mListVerticesShader, 2, numVoxels);
 
 	uint32_t listIndicesCS = gl::createShader("Assets/SPIRV/list-indices.comp.spv");
 	mListIndicesShader = gl::createProgram(&listIndicesCS, 1);
+	glProgramUniform1i(mListIndicesShader, 2, numVoxels);
 	gl::destroyShader(listIndicesCS);
 
-	generateMesh();
+	// Initialize Timer Query
+	gl::createQuery(mTimerQuery, 16);
 }
 
-void MarchingCube::generateMesh()
+void MarchingCube::generate(GpuMesh* mesh, uint32_t densityTexture, uint32_t numVoxel)
 {
-	generateVertices();
-	generateIndices();
+	generateVertices(mesh, densityTexture, numVoxel);
+
+	// @TODO we can list nonempty grid in the first generateVertices pass and
+	// trigger that number of invocation while generating indices, thus possibly 
+	// reducing the total compute invocation and redundant calculations
+	generateIndices(mesh, densityTexture, numVoxel);
 
 	gl::lockBuffer(mSync);
 	gl::waitBuffer(mSync);
 
-	mVertexCount = mCountBufferPtr[0];
-	mTriangleCount = mCountBufferPtr[4];
+	mesh->vertexCount = mCountBufferPtr[0];
+	mesh->indexCount = mCountBufferPtr[4] * 3;
 	std::memset(mCountBufferPtr, 0, sizeof(uint32_t) * 8);
-	//std::cout << "Vertices[ " << mVertexCount << " ]" << " Triangles[ " << mTriangleCount << " ]" << std::endl;
 }
 
-void MarchingCube::generateVertices()
+void MarchingCube::generateVertices(GpuMesh* mesh, uint32_t densityTexture, uint32_t numVoxel)
 {
-	uint32_t gridSize = mChunk->getNumVoxel() - 1;
+	glBeginQuery(GL_TIME_ELAPSED, mTimerQuery[0]);
+
 	glUseProgram(mListVerticesShader);
-	glUniform1i(2, gridSize);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, mTriLUTBuffer);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mVertexBuffer);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mesh->vertexBuffer);
 	glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, mCountBuffer, 0, sizeof(uint32_t));
-	glBindImageTexture(3, mChunk->getDensityTexture(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32F);
+	glBindImageTexture(3, densityTexture, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32F);
 	
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, mSplatBuffer);
 
-	glDispatchCompute((gridSize + 8) / 8, (gridSize + 8) / 8, (gridSize + 8) / 8);
+	uint32_t workSize = (numVoxel + 7) / 8;
+	glDispatchCompute(workSize, workSize, workSize);
 	glUseProgram(0);
+
+	glEndQuery(GL_TIME_ELAPSED);
 }
 
-void MarchingCube::generateIndices()
+void MarchingCube::generateIndices(GpuMesh* mesh, uint32_t densityTexture, uint32_t numVoxel)
 {
-	// @TODO maybe we can reduce shader invocations if we figure out the empty cell beforehand
-	uint32_t gridSize = mChunk->getNumVoxel() - 1;
+	glBeginQuery(GL_TIME_ELAPSED, mTimerQuery[1]);
 
 	// List indices
 	glUseProgram(mListIndicesShader);
-	glUniform1i(2, gridSize);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, mTriLUTBuffer);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mIndexBuffer);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mesh->indexBuffer);
 	glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, mCountBuffer, sizeof(uint32_t) * 4, sizeof(uint32_t));
-	glBindImageTexture(3, mChunk->getDensityTexture(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32F);
+	glBindImageTexture(3, densityTexture, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32F);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, mSplatBuffer);
 
-	glDispatchCompute((gridSize + 7) / 8, (gridSize + 7) / 8, (gridSize + 7) / 8);
+	uint32_t workSize = (numVoxel - 6) / 8;
+	glDispatchCompute(workSize, workSize, workSize);
 	glUseProgram(0);
-}
 
+	glEndQuery(GL_TIME_ELAPSED);
+
+	// Wait until the query results are available
+	int done = 0;
+	while (!done) {
+		glGetQueryObjectiv(mTimerQuery[1],
+			GL_QUERY_RESULT_AVAILABLE,
+			&done);
+	}
+
+	// get the query results
+	uint64_t elapsedTimes[2] = { 0, 0 };
+	glGetQueryObjectui64v(mTimerQuery[0], GL_QUERY_RESULT, &elapsedTimes[0]);
+	glGetQueryObjectui64v(mTimerQuery[1], GL_QUERY_RESULT, &elapsedTimes[1]);
+
+	timeToGenerateVertices = elapsedTimes[0] * 1e-6f;
+	timeToGenerateIndices = elapsedTimes[1] * 1e-6f;
+
+	std::cout << "\033[31;1;4mVertices Generation[" << timeToGenerateVertices << "ms ]"  <<
+		          "Indices Generation[" << timeToGenerateIndices << "ms ]\033[0m" << std::endl;
+}
+/*
 void MarchingCube::render(Camera* camera, unsigned int globalUBO)
 {
 
@@ -117,6 +128,7 @@ void MarchingCube::render(Camera* camera, unsigned int globalUBO)
 
 	glUseProgram(0);
 }
+*/
 
 void MarchingCube::destroy()
 {
@@ -124,8 +136,9 @@ void MarchingCube::destroy()
 	gl::destroyProgram(mListIndicesShader);
 
 	gl::destroyBuffer(mTriLUTBuffer);
-	gl::destroyBuffer(mVertexBuffer);
 	gl::destroyBuffer(mCountBuffer);
+
+	gl::destroyQuery(mTimerQuery, 16);
 
 	mCountBufferPtr = nullptr;
 }

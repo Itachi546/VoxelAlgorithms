@@ -24,13 +24,13 @@
     <ClInclude Include="Source\mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\build-density.h">
+    <ClInclude Include="Source\chunk\build-density.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\voxel-chunk.h">
+    <ClInclude Include="Source\chunk\chunk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\voxel-algorithm\voxel-renderer.h">
+    <ClInclude Include="Source\voxel-algorithm\voxel-generator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\timer.h">
@@ -57,6 +57,9 @@
     <ClInclude Include="Source\camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\glm-includes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\gpu-noise.cpp">
@@ -68,10 +71,10 @@
     <ClCompile Include="Source\gl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\build-density.cpp">
+    <ClCompile Include="Source\chunk\build-density.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\voxel-chunk.cpp">
+    <ClCompile Include="Source\chunk\chunk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\voxel-algorithm\marchingcube.cpp">

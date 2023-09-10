@@ -1,8 +1,8 @@
 #pragma once
 
-#include "voxel-renderer.h"
+#include "voxel-generator.h"
 #include "../mesh.h"
-
+/*
 class VoxelChunk;
 
 class MarchingCubeCpu : public VoxelRenderer {
@@ -35,4 +35,4 @@ private:
 
 	bool mIntersected = false;
 	glm::vec3 mIntersectionPoint = glm::vec3(0.0f);
-};
+};*/

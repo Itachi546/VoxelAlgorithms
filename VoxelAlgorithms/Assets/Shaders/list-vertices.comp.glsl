@@ -40,13 +40,12 @@ vec4 createPoint(ivec3 p) {
 }
 
 const ivec2 E = ivec2(1, 0);
-vec3 calculateNormal(vec3 p) {
-
-   ivec3 ip = ivec3(p);
+vec3 calculateNormal(vec4 p) {
+   ivec3 ip = ivec3(p.xyz);
    return normalize(vec3(
-      getDensity(ip + E.xyy) - getDensity(ip - E.xyy),
-      getDensity(ip + E.yxy) - getDensity(ip - E.yxy),
-      getDensity(ip + E.yyx) - getDensity(ip - E.yyx)
+      getDensity(ip + E.xyy) - p.w,
+      getDensity(ip + E.yxy) - p.w,
+      getDensity(ip + E.yyx) - p.w
    ));
 }
 
@@ -56,8 +55,8 @@ vec3 interpolatePosition(vec4 p0, vec4 p1, float isoLevel, out vec3 n) {
 
    float d = (isoLevel - d0)/ (d1 - d0);
 
-   vec3 n0 = calculateNormal(p0.xyz);
-   vec3 n1 = calculateNormal(p1.xyz);
+   vec3 n0 = calculateNormal(p0);
+   vec3 n1 = calculateNormal(p1);
    n = n0 + d * (n1 - n0); 
    
    vec3 p = p0.xyz + d * (p1.xyz - p0.xyz);

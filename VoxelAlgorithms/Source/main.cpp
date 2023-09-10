@@ -6,9 +6,10 @@
 #include "orbit-camera.h"
 #include "first-person-camera.h"
 
-#include "voxel-chunk.h"
+#include "chunk/build-density.h"
+#include "chunk/chunk.h"
 #include "voxel-algorithm/marchingcube.h"
-#include "voxel-algorithm/marching-cube-cpu.h"
+
 
 #include <iostream>
 #include <GLFW/glfw3.h>
@@ -125,29 +126,26 @@ int main()
     DensityBuilder densityBuilder(params, densityShader);
 
     const int CHUNK_SIZE = 256;
-    VoxelChunk voxelChunk{ CHUNK_SIZE, 1 };
-    voxelChunk.generateDensities(&densityBuilder);
+    VoxelGenerator* generator = MarchingCube::getInstance();
+    generator->initialize(CHUNK_SIZE + 1);
 
-	uint32_t vs = gl::createShader("Assets/SPIRV/main.vert.spv");
-	uint32_t fs = gl::createShader("Assets/SPIRV/main.frag.spv");
-	uint32_t shaders[] = { vs, fs };
-	unsigned int drawShader = gl::createProgram(shaders, 2);
-    glm::vec3 color = glm::vec3(1.0f, 0.0f, 1.0f);
-	gl::destroyShader(vs);
-	gl::destroyShader(fs);
-
-    VoxelRenderer* renderer = new MarchingCube(&voxelChunk, drawShader);
-    renderer->initialize();
-
+    Chunk chunk{ glm::ivec3(0), CHUNK_SIZE };
+    chunk.generate(&densityBuilder, generator);
+	
     FirstPersonCamera* camera = new FirstPersonCamera();
     camera->initialize();
     camera->setPosition(glm::vec3(0.0f, CHUNK_SIZE, -CHUNK_SIZE));
 
-    float dt = (float)timer->getDeltaSeconds();
-
-    bool enableWireframe = false;
+    uint32_t vs = gl::createShader("Assets/SPIRV/main.vert.spv");
+    uint32_t fs = gl::createShader("Assets/SPIRV/main.frag.spv");
+    uint32_t shaders[] = { vs, fs };
+    unsigned int drawShader = gl::createProgram(shaders, 2);
+    gl::destroyShader(vs);
+    gl::destroyShader(fs);
     unsigned int globalUBO = gl::createBuffer(nullptr, sizeof(GlobalUniforms), GL_DYNAMIC_STORAGE_BIT);
 
+    bool enableWireframe = false;
+    float dt = (float)timer->getDeltaSeconds();
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
@@ -195,8 +193,10 @@ int main()
         gGlobalUniforms.cameraPosition = glm::vec4(camera->getPosition(), 1.0f);
         glNamedBufferSubData(globalUBO, 0, sizeof(GlobalUniforms),  &gGlobalUniforms);
 
-        renderer->setSize(gWidth, gHeight);
-        renderer->render(camera, globalUBO);
+        glUseProgram(drawShader);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
+        chunk.draw();
+        glUseProgram(0);
       
         glfwSwapBuffers(window);
         dt = (float)timer->tick();
@@ -207,8 +207,9 @@ int main()
         input->update();
     }
 
+    generator->destroy();
+    chunk.destroy();
 
-    renderer->destroy();
     fullScreenQuad->destroy();
     gl::destroyProgram(densityShader);
     glfwDestroyWindow(window);

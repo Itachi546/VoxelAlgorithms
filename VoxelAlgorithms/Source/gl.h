@@ -35,6 +35,14 @@ namespace gl {
         glDeleteBuffers(1, &buffer);
     }
 
+    inline void createQuery(uint32_t* queries, uint32_t queryCount) {
+        glGenQueries(queryCount, queries);
+    }
+
+    inline void destroyQuery(uint32_t* queries, uint32_t queryCount) {
+        glDeleteQueries(queryCount, queries);
+    }
+
     inline GLuint createVertexArray() {
         GLuint vao = ~0u;
         glGenVertexArrays(1, &vao);
@@ -78,6 +86,10 @@ namespace gl {
     }
 
     GLuint createTexture(const TextureParams& param);
+
+    inline void destroyTexture(unsigned int texture) {
+        glDeleteTextures(1, &texture);
+    }
 
 	inline void lockBuffer(GLsync& sync)
     {

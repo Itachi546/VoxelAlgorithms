@@ -18,7 +18,7 @@ void main() {
   vec3 ld =	normalize(vec3(0.5,	1.0, -0.5));
   vec3 n = vec3(0.0f);
 
-#if 0
+#if 1
   n = normalize(vNormal);
 #else
   n = normal;

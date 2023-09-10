@@ -1,42 +1,40 @@
 #pragma once
 
-#include "voxel-renderer.h"
-#include "../voxel-chunk.h"
+#include "voxel-generator.h"
 
 #include "../gl.h"
 
-class MarchingCube : public VoxelRenderer
+class MarchingCube : public VoxelGenerator
 {
 public:
-	MarchingCube(VoxelChunk* chunk, unsigned int drawShader);
+	static MarchingCube* getInstance() {
+		static MarchingCube* mc = new MarchingCube();
+		return mc;
+	}
 
-	void initialize() override;
+	void initialize(uint32_t numVoxel) override;
 
-	void render(Camera* camera, unsigned int globalUBO) override;
+	void generate(GpuMesh* mesh, uint32_t densityTexture, uint32_t numVoxel) override;
 
 	void destroy() override;
 
+	float timeToGenerateVertices = 0.0f;
+	float timeToGenerateIndices = 0.0f;
 private:
-	VoxelChunk* mChunk;
+	MarchingCube() = default;
 
 	uint32_t mSplatBuffer;
 	uint32_t mTriLUTBuffer;
-	uint32_t mVertexBuffer;
-	uint32_t mIndexBuffer;
 
 	uint32_t mCountBuffer;
 	uint32_t* mCountBufferPtr;
-	uint32_t mTriangleCount;
-	uint32_t mVertexCount;
 
 	uint32_t mListVerticesShader;
 	uint32_t mListIndicesShader;
-	uint32_t mDrawShader;
 
 	GLsync mSync;
+	unsigned int mTimerQuery[16];
 	
-	void generateMesh();
-
-	void generateVertices();
-	void generateIndices();
+	void generateVertices(GpuMesh* mesh, uint32_t densityTexture, uint32_t numVoxel);
+	void generateIndices(GpuMesh* mesh, uint32_t densityTexture, uint32_t numVoxel);
 };
