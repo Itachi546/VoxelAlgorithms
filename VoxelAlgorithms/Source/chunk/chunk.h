@@ -2,11 +2,11 @@
 
 #include <stdint.h>
 #include "../glm-includes.h"
-#include "../mesh.h"
-
-#include "../voxel-algorithm/voxel-generator.h"
+#include "terrain-resource-manager.h"
 
 class DensityBuilder;
+class VoxelGenerator;
+struct GpuMesh;
 
 class Chunk {
 
@@ -17,7 +17,7 @@ public:
 
 	void draw();
 	
-	unsigned int getDensityTexture() const { return mDensityTexture; }
+	unsigned int getDensityTexture() const { return mDensityTexture.texture; }
 
 	uint32_t getNumVoxel() const { return mNumVoxel; }
 
@@ -30,7 +30,7 @@ private:
 
 	uint32_t mNumVoxel;
 
-	GpuMesh mMesh;
+	MeshResourceHandle mMesh;
+	TextureResourceHandle mDensityTexture;
 
-	unsigned int mDensityTexture;
 };

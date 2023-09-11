@@ -151,6 +151,9 @@
   <ItemGroup>
     <ClInclude Include="Source\chunk\build-density.h" />
     <ClInclude Include="Source\camera.h" />
+    <ClInclude Include="Source\chunk\chunk-manager.h" />
+    <ClInclude Include="Source\chunk\resource-pool.h" />
+    <ClInclude Include="Source\chunk\terrain-resource-manager.h" />
     <ClInclude Include="Source\first-person-camera.h" />
     <ClInclude Include="Source\gl.h" />
     <ClInclude Include="Source\glm-includes.h" />
@@ -167,6 +170,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\chunk\build-density.cpp" />
+    <ClCompile Include="Source\chunk\chunk-manager.cpp" />
+    <ClCompile Include="Source\chunk\terrain-resource-manager.cpp" />
     <ClCompile Include="Source\first-person-camera.cpp" />
     <ClCompile Include="Source\gl.cpp" />
     <ClCompile Include="Source\gpu-noise.cpp" />

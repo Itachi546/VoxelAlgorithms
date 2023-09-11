@@ -68,6 +68,7 @@ vec3 interpolatePosition(vec4 p0, vec4 p1, float isoLevel, out vec3 n) {
 void main() {
   
   ivec3 uv = ivec3(gl_GlobalInvocationID.xyz);
+  if(uv.x > uVoxelCount || uv.y > uVoxelCount || uv.z > uVoxelCount) return; 
 
   // 8 corners of the current cube
   vec4 cubeCorners[8] = vec4[8](

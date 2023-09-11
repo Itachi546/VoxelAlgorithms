@@ -1,54 +1,56 @@
 #include "chunk.h"
 
 #include "build-density.h"
-#include "../gl.h"
-
 #include "../voxel-algorithm/voxel-generator.h"
 
-Chunk::Chunk(const glm::ivec3& chunkId, uint32_t chunkSize) : mChunkId(chunkId)
+#include "../gl.h"
+#include "../mesh.h"
+
+
+Chunk::Chunk(const glm::ivec3& chunkId, uint32_t chunkSize) : mChunkId(chunkId),
+  mNumVoxel(chunkSize)
 {
-	gl::TextureParams params;
-	gl::initializeTextureParams(params);
-
-	// Generate additional one voxel at the boundary
-	mNumVoxel = chunkSize + 1;
-	params.wrapMode = GL_CLAMP_TO_EDGE;
-	params.width = mNumVoxel;
-	params.height = mNumVoxel;
-	params.depth = mNumVoxel;
-	params.format = GL_RED;
-	params.internalFormat = GL_R32F;
-	params.type = GL_FLOAT;
-	params.target = GL_TEXTURE_3D;
-
-	mDensityTexture = gl::createTexture(params);
-
-	// We generate the vertices that lies at edge 0, 3 or 8 only so that is the maximum
-	// of 3 vertex for each voxel each having 6 floats
-	const int totalVoxel = mNumVoxel * mNumVoxel * mNumVoxel;
-	const int vertexSize = totalVoxel * 18 * sizeof(float);
-	// Each voxel can have upto 5 triangle that makes upto 15 possible indices
-	const int indexSize = totalVoxel * sizeof(uint32_t) * 15;
-	mMesh.create(vertexSize, indexSize);
+	mMesh = { INVALID_RESOURCE_HANDLE, nullptr };
+	mDensityTexture = { INVALID_RESOURCE_HANDLE, ~0u };
 }
 
 void Chunk::generate(DensityBuilder* builder, VoxelGenerator* generator)
 {
-	builder->generate(mDensityTexture, mNumVoxel, mNumVoxel, mNumVoxel);
+	TerrainResourceManager* resourceManager = TerrainResourceManager::getInstance();
 
-	generator->generate(&mMesh, mDensityTexture, mNumVoxel);
+	TextureResourceHandle texture = resourceManager->getTexture();
+	builder->generate(texture.texture, mNumVoxel, mNumVoxel, mNumVoxel, mChunkId);
+
+	MeshResourceHandle mesh = resourceManager->getMesh();
+	generator->generate(mesh.mesh, texture.texture, mNumVoxel);
+
+	// If no vertices are generated for this chunk, then we
+	// can release the mesh and texture resource for use 
+	// for other chunk
+	if (mesh.mesh->vertexCount == 0) {
+		resourceManager->releaseMesh(mesh);
+		resourceManager->releaseTexture(texture);
+	}
+	else {
+		mMesh = mesh;
+		mDensityTexture = texture;
+	}
 }
 
 void Chunk::draw()
 {
-	glm::mat4 M = glm::mat4(1.0f);
-	glUniformMatrix4fv(0, 1, GL_FALSE, &M[0][0]);
-	mMesh.draw();
+	if (mMesh.mesh != nullptr) {
+		glm::mat4 M = glm::translate(glm::mat4(1.0f), glm::vec3(mChunkId));
+		glUniformMatrix4fv(0, 1, GL_FALSE, &M[0][0]);
+		mMesh.mesh->draw();
+	}
 }
 
 void Chunk::destroy()
 {
-	gl::destroyTexture(mDensityTexture);
-	gl::destroyBuffer(mMesh.vertexBuffer);
-	gl::destroyBuffer(mMesh.indexBuffer);
+	TerrainResourceManager* resourceManager = TerrainResourceManager::getInstance();
+	if (mMesh.id != INVALID_RESOURCE_HANDLE)
+		resourceManager->releaseMesh(mMesh);
+	if (mDensityTexture.id != INVALID_RESOURCE_HANDLE)
+		resourceManager->releaseTexture(mDensityTexture);
 }

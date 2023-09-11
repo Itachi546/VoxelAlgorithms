@@ -18,7 +18,7 @@ void main() {
   vec3 ld =	normalize(vec3(0.5,	1.0, -0.5));
   vec3 n = vec3(0.0f);
 
-#if 1
+#if 0
   n = normalize(vNormal);
 #else
   n = normal;
@@ -31,12 +31,9 @@ void main() {
   vec3 c0 = vec3(0.7, 0.3, 0.1);
 
   float petrub = snoise(vPosition.xyz * vec3(0.2, 1.0, 0.2)) * 8.0;
-  vec3 albedo = mix(c0, c1, n.y * 0.5 + 0.5);
+  vec3 albedo = mix(c0, c1, abs(n.y));
 
-  if(n.y < 0.3)
-   albedo *= mix(albedo, vec3(1.0, 0.1, 0.2), petrub);
-
-  col += diffuse;
+  col += diffuse * albedo;
 
   col /= (1.0f + col);
   col =	pow(col, vec3(0.5));

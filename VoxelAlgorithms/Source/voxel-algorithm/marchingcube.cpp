@@ -11,7 +11,7 @@ void MarchingCube::initialize(uint32_t numVoxels)
 	// Initialize Buffers
 	mTriLUTBuffer = gl::createBuffer(MarchingCubeLUT::triTable, sizeof(MarchingCubeLUT::triTable), 0);
 
-	const uint32_t splatBufferSize = numVoxels * numVoxels * numVoxels * 4 * sizeof(uint32_t);
+	const uint32_t splatBufferSize = (numVoxels + 1) * (numVoxels + 1) * (numVoxels + 1) * 4 * sizeof(uint32_t);
 	mSplatBuffer = gl::createBuffer(nullptr, splatBufferSize, GL_DYNAMIC_STORAGE_BIT);
 
 	mCountBuffer = gl::createBuffer(nullptr, sizeof(uint32_t) * 8, GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT | GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
@@ -37,6 +37,8 @@ void MarchingCube::initialize(uint32_t numVoxels)
 void MarchingCube::generate(GpuMesh* mesh, uint32_t densityTexture, uint32_t numVoxel)
 {
 	generateVertices(mesh, densityTexture, numVoxel);
+	// @TODO check vertex count before invoking the generateIndices compute pass
+	// Most of the chunk are generally empty
 
 	// @TODO we can list nonempty grid in the first generateVertices pass and
 	// trigger that number of invocation while generating indices, thus possibly 
@@ -82,7 +84,7 @@ void MarchingCube::generateIndices(GpuMesh* mesh, uint32_t densityTexture, uint3
 	glBindImageTexture(3, densityTexture, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32F);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, mSplatBuffer);
 
-	uint32_t workSize = (numVoxel - 6) / 8;
+	uint32_t workSize = (numVoxel + 7) / 8;
 	glDispatchCompute(workSize, workSize, workSize);
 	glUseProgram(0);
 

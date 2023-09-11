@@ -5,11 +5,7 @@
 #include "camera.h"
 #include "orbit-camera.h"
 #include "first-person-camera.h"
-
-#include "chunk/build-density.h"
-#include "chunk/chunk.h"
-#include "voxel-algorithm/marchingcube.h"
-
+#include "chunk/chunk-manager.h"
 
 #include <iostream>
 #include <GLFW/glfw3.h>
@@ -105,6 +101,9 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glDebugMessageCallback(MessageCallback, 0);
 
+    std::cout << glGetString(GL_RENDERER) << std::endl;
+    std::cout << glGetString(GL_VENDOR) << std::endl;
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Initialize singleton
@@ -117,24 +116,14 @@ int main()
     FullScreenQuad* fullScreenQuad = FullScreenQuad::getInstance();
     fullScreenQuad->initialize();
 
-    // Initialize shaders
-    GLuint densityCS = gl::createShader("Assets/SPIRV/build-density.comp.spv");
-    GLuint densityShader = gl::createProgram(&densityCS, 1);
-    gl::destroyShader(densityCS);
+    ChunkManager* chunkManager = ChunkManager::getInstance();
+    chunkManager->initialize();
 
-    DensityParams params = { 1.0f, 1.0f, 0.5f, 0.5f, 5 };
-    DensityBuilder densityBuilder(params, densityShader);
+    int chunkSize = (int)chunkManager->getNumVoxel();
 
-    const int CHUNK_SIZE = 256;
-    VoxelGenerator* generator = MarchingCube::getInstance();
-    generator->initialize(CHUNK_SIZE + 1);
-
-    Chunk chunk{ glm::ivec3(0), CHUNK_SIZE };
-    chunk.generate(&densityBuilder, generator);
-	
     FirstPersonCamera* camera = new FirstPersonCamera();
     camera->initialize();
-    camera->setPosition(glm::vec3(0.0f, CHUNK_SIZE, -CHUNK_SIZE));
+    camera->setPosition(glm::vec3(0.0f, chunkSize, -chunkSize));
 
     uint32_t vs = gl::createShader("Assets/SPIRV/main.vert.spv");
     uint32_t fs = gl::createShader("Assets/SPIRV/main.frag.spv");
@@ -195,7 +184,11 @@ int main()
 
         glUseProgram(drawShader);
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
-        chunk.draw();
+        chunkManager->render();
+
+        glm::mat4 transform = glm::mat4(1.0f);
+        glUniformMatrix4fv(0, 1, GL_FALSE, &transform[0][0]);
+        DefaultMesh::getInstance()->getSphere()->draw();
         glUseProgram(0);
       
         glfwSwapBuffers(window);
@@ -207,11 +200,9 @@ int main()
         input->update();
     }
 
-    generator->destroy();
-    chunk.destroy();
+    chunkManager->destroy();
 
     fullScreenQuad->destroy();
-    gl::destroyProgram(densityShader);
     glfwDestroyWindow(window);
     glfwTerminate();
 

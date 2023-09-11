@@ -47,6 +47,7 @@ uint getVertexIndex(ivec3 uv, int edge) {
 void main() {
   
   ivec3 uv = ivec3(gl_GlobalInvocationID.xyz);
+  if(uv.x > uVoxelCount - 1 || uv.y > uVoxelCount - 1 || uv.z > uVoxelCount - 1) return; 
 
   // 8 corners of the current cube
   vec4 cubeCorners[8] = vec4[8](

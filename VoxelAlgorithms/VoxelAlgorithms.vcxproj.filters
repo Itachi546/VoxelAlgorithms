@@ -60,6 +60,15 @@
     <ClInclude Include="Source\glm-includes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\chunk\chunk-manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\chunk\resource-pool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\chunk\terrain-resource-manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\gpu-noise.cpp">
@@ -87,6 +96,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\first-person-camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\chunk\chunk-manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\chunk\terrain-resource-manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

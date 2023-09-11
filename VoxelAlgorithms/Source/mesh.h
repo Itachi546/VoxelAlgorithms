@@ -38,6 +38,12 @@ struct GpuMesh {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
         glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
     }
+
+    void destroy() {
+		gl::destroyBuffer(vertexBuffer);
+        gl::destroyBuffer(indexBuffer);
+        indexCount = 0;
+    }
 };
 
 struct Mesh {

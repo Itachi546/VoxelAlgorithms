@@ -7,9 +7,12 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 layout(r32f, binding = 0) uniform image3D uDensityTexture;
 
+layout(location = 1) uniform vec3 uOffset;
+
 float map(vec3 p)
 {
-   vec3 offset = vec3(0.0f);
+   p += uOffset;
+   return min(p.y - 8.0f, length(p - vec3(32.0f, 16.0f, 16.0f)) - 8.0f);
    float noise = 0.0f;
    float amplitude = 1.0f;
    float frequency = 0.005f;
@@ -18,7 +21,7 @@ float map(vec3 p)
    int numOctaves = 7;
 
    for(int i = 0; i < numOctaves; ++i) {
-      float n = snoise((p + offset) * frequency);
+      float n = snoise((p) * frequency);
       noise += n * amplitude;
       amplitude *= persistence;
       frequency *= lacunarity;
