@@ -15,11 +15,14 @@ struct DensityParams {
 class DensityBuilder
 {
 public:
-	DensityBuilder(DensityParams params, unsigned int shader) : mParams(params), mShader(shader) {}
+	DensityBuilder(DensityParams params, uint32_t shader);
 
 	void generate(uint32_t texture, uint32_t width, uint32_t height, uint32_t depth, glm::ivec3 offset);
 
+	float timeToGenerateDensity = 0.0f;
 private:
 	DensityParams mParams;
 	unsigned int mShader;
+
+	unsigned int mTimerQuery;
 };
