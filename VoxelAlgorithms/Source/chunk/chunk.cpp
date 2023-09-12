@@ -6,6 +6,8 @@
 #include "../gl.h"
 #include "../mesh.h"
 
+uint32_t Chunk::totalEmptyChunk = 0;
+uint32_t Chunk::totalNonEmptyChunk = 0;
 
 Chunk::Chunk(const glm::ivec3& chunkId, uint32_t chunkSize) : mChunkId(chunkId),
   mNumVoxel(chunkSize)
@@ -30,11 +32,14 @@ void Chunk::generate(DensityBuilder* builder, VoxelGenerator* generator)
 	if (mesh.mesh->vertexCount == 0) {
 		resourceManager->releaseMesh(mesh);
 		resourceManager->releaseTexture(texture);
+		totalEmptyChunk += 1;
 	}
 	else {
+		totalNonEmptyChunk += 1;
 		mMesh = mesh;
 		mDensityTexture = texture;
 	}
+	std::cout << "Empty Chunk [ " << totalEmptyChunk << " ] Non-Empty Chunk [" << totalNonEmptyChunk << "]" << std::endl;
 }
 
 void Chunk::draw()

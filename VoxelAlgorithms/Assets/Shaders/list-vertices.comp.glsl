@@ -5,7 +5,6 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 #extension GL_GOOGLE_include_directive : require
 
 #include "helpers.glsl"
-#include "noise.glsl"
 
 struct Triangulation {
   int edges[16];
@@ -60,6 +59,7 @@ vec3 interpolatePosition(vec4 p0, vec4 p1, float isoLevel, out vec3 n) {
    n = n0 + d * (n1 - n0); 
    
    vec3 p = p0.xyz + d * (p1.xyz - p0.xyz);
+
    n = normalize(n);
 
    return p;
@@ -111,7 +111,6 @@ void main() {
        Vertex vertex;
        vertex.p[0] = p.x, vertex.p[1] = p.y, vertex.p[2] = p.z;
        vertex.n[0] = n.x, vertex.n[1] = n.y, vertex.n[2] = n.z;
-
 
  	   uint	index =	atomicAdd(totalTriangle, 1);
        values[e / 3] = index;

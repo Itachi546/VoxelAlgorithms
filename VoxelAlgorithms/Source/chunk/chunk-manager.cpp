@@ -2,10 +2,13 @@
 
 #include "build-density.h"
 #include "../voxel-algorithm/marchingcube.h"
+#include "../camera.h"
 
-void ChunkManager::initialize()
+void ChunkManager::initialize(Camera* camera)
 {
-	TerrainResourceManager::getInstance()->initialize(kMaxChunkCount, kNumVoxel);
+	mCamera = camera;
+
+	TerrainResourceManager::getInstance()->initialize(kAllocationSize, kNumVoxel);
 
 	// Initialize density builder
 	GLuint densityCS = gl::createShader("Assets/SPIRV/build-density.comp.spv");
@@ -17,17 +20,12 @@ void ChunkManager::initialize()
 	mMeshGenerator = MarchingCube::getInstance();
 	mMeshGenerator->initialize(kNumVoxel);
 
-	Chunk chunk{glm::ivec3(0), kNumVoxel};
-	chunk.generate(mDensityBuilder, mMeshGenerator);
-	mChunkList.push_back(chunk);
-
-	Chunk chunk2{ glm::ivec3(kNumVoxel, 0, 0), kNumVoxel };
-	chunk2.generate(mDensityBuilder, mMeshGenerator);
-	mChunkList.push_back(chunk2);
+	initializeLoadingList();
 }
 
 void ChunkManager::update(float dt)
 {
+	updateLoadingList();
 }
 
 void ChunkManager::render()
@@ -43,4 +41,32 @@ void ChunkManager::destroy()
 
 	mMeshGenerator->destroy();
 	TerrainResourceManager::getInstance()->destroy();
+}
+
+void ChunkManager::initializeLoadingList()
+{
+	glm::vec3 cameraPosition = mCamera->getPosition();
+	glm::ivec3 currentGrid = glm::ivec3(cameraPosition / float(kNumVoxel));
+
+	for (int y = -kMaxChunkRadius; y <= kMaxChunkRadius; ++y) {
+		for (int z = -kMaxChunkRadius; z <= kMaxChunkRadius; ++z) {
+			for (int x = -kMaxChunkRadius; x <= kMaxChunkRadius; ++x) {
+				mChunkLoadingList.push_back(currentGrid + glm::ivec3(x, y, z));
+			}
+		}
+	}
+}
+
+void ChunkManager::updateLoadingList()
+{
+	const uint32_t maxChunkBuildPerFrame = 3;
+
+	for (uint32_t i = 0; i < maxChunkBuildPerFrame; ++i) {
+		if (mChunkLoadingList.size() == 0)  break;
+		glm::ivec3 chunkToLoad = mChunkLoadingList.back();
+		mChunkLoadingList.pop_back();
+		Chunk chunk{ chunkToLoad * int(kNumVoxel), kNumVoxel };
+		chunk.generate(mDensityBuilder, mMeshGenerator);
+		mChunkList.push_back(chunk);
+	}
 }

@@ -5,6 +5,7 @@ layout(location = 1) in vec3 normal;
 
 layout(location = 0) out vec3 vNormal;
 layout(location = 1) out vec3 vPosition;
+layout(location = 2) out vec3 vCamPos;
 
 #extension GL_EXT_scalar_block_layout : enable
 
@@ -18,8 +19,10 @@ layout(std430, binding = 0) uniform GlobalData {
 layout(location = 0) uniform mat4 M;
 
 void main() {
-  gl_Position = P * V * M * vec4(position.xyz, 1.0f);
+  vec4 worldPos = M * vec4(position.xyz, 1.0f);
+  gl_Position = P * V * worldPos;
 
   vNormal = normal;
-  vPosition = position;
+  vPosition = worldPos.xyz;
+  vCamPos = cameraPosition.xyz;
 }

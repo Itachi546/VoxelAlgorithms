@@ -12,10 +12,11 @@ layout(location = 1) uniform vec3 uOffset;
 float map(vec3 p)
 {
    p += uOffset;
-   return min(p.y - 15.0f, length(p - vec3(32.0f, 24.0f, 16.0f)) - 8.0f);
+
+   //return min(p.y - 15.0f, length(p - vec3(32.0f, 24.0f, 16.0f)) - 8.0f);
    float noise = 0.0f;
    float amplitude = 1.0f;
-   float frequency = 0.005f;
+   float frequency = 0.008f;
    float lacunarity = 2.0f;
    float persistence = 0.5f;
    int numOctaves = 7;
@@ -26,8 +27,9 @@ float map(vec3 p)
       amplitude *= persistence;
       frequency *= lacunarity;
    }
-   noise = clamp(noise * noise, -1.0, 1.0);
-   return p.y - 128.0f + noise * 70.0f;
+   //noise = clamp(noise * noise,	0.0, 1.0);
+   float d = p.y - 128.0f + (noise * 2.0f - 1.0f) * 30.0f;
+   return d;
 }
 
 void main() 

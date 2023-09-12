@@ -33,4 +33,6 @@ private:
 	MeshResourceHandle mMesh;
 	TextureResourceHandle mDensityTexture;
 
+	static uint32_t totalEmptyChunk;
+	static uint32_t totalNonEmptyChunk;
 };

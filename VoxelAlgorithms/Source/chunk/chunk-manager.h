@@ -17,6 +17,7 @@
 */
 
 class DensityBuilder;
+class Camera;
 
 class ChunkManager {
 
@@ -27,7 +28,7 @@ public:
 	}
 
 	// maxChunkCount
-	void initialize();
+	void initialize(Camera* camera);
 
 	void update(float dt);
 
@@ -40,7 +41,7 @@ public:
 private:
 	ChunkManager() = default;
 
-	const uint32_t kMaxChunkCount = 2;
+	const uint32_t kAllocationSize = 500;
 
 	std::vector<Chunk> mChunkList;
 
@@ -51,4 +52,11 @@ private:
 	uint32_t mDensityShader = 0;
 	DensityBuilder* mDensityBuilder = nullptr;
 	VoxelGenerator* mMeshGenerator = nullptr;
+
+	const int kMaxChunkRadius = 5;
+	Camera* mCamera;
+
+	void initializeLoadingList();
+
+	void updateLoadingList();
 };

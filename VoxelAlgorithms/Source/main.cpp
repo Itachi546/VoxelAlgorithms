@@ -22,9 +22,11 @@ MessageCallback(GLenum source,
     const GLchar* message,
     const void* userParam)
 {
+    /*
     fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
         (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
         type, severity, message);
+        */
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -54,8 +56,8 @@ static void scroll_callback(GLFWwindow* window, double xOffset, double yOffset) 
 }
 
 static void window_resize_callback(GLFWwindow* window, int width, int height) {
-  gWidth = width;
-  gHeight = height;
+  gWidth = std::max(width, 1);
+  gHeight = std::max(height, 1);
 }
 
 struct GlobalUniforms {
@@ -104,7 +106,7 @@ int main()
     std::cout << glGetString(GL_RENDERER) << std::endl;
     std::cout << glGetString(GL_VENDOR) << std::endl;
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.5f, 0.6f, 0.7f, 1.0f);
 
     // Initialize singleton
     Timer* timer = Timer::getInstance();
@@ -116,14 +118,12 @@ int main()
     FullScreenQuad* fullScreenQuad = FullScreenQuad::getInstance();
     fullScreenQuad->initialize();
 
-    ChunkManager* chunkManager = ChunkManager::getInstance();
-    chunkManager->initialize();
-
-    int chunkSize = (int)chunkManager->getNumVoxel();
-
     FirstPersonCamera* camera = new FirstPersonCamera();
     camera->initialize();
-    camera->setPosition(glm::vec3(0.0f, chunkSize, -chunkSize));
+    camera->setPosition(glm::vec3(0.0f, 256.0f, -32.0f));
+
+    ChunkManager* chunkManager = ChunkManager::getInstance();
+    chunkManager->initialize(camera);
 
     uint32_t vs = gl::createShader("Assets/SPIRV/main.vert.spv");
     uint32_t fs = gl::createShader("Assets/SPIRV/main.frag.spv");
@@ -173,8 +173,11 @@ int main()
         else if (input->isKeyDown(GLFW_KEY_2))
             camera->lift(-dt * walkSpeed);
 
-        camera->update(dt);
         camera->setAspect(float(gWidth) / float(gHeight));
+        camera->update(dt);
+
+        chunkManager->update(dt);
+
 
         gGlobalUniforms.P = camera->getProjectionMatrix();
         gGlobalUniforms.V = camera->getViewMatrix();
