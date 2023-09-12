@@ -65,7 +65,7 @@ void MarchingCube::generateVertices(GpuMesh* mesh, uint32_t densityTexture, uint
 	
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, mSplatBuffer);
 
-	uint32_t workSize = (numVoxel + 7) / 8;
+	uint32_t workSize = (numVoxel + 8) / 8;
 	glDispatchCompute(workSize, workSize, workSize);
 	glUseProgram(0);
 

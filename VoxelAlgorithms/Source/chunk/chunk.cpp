@@ -19,7 +19,7 @@ void Chunk::generate(DensityBuilder* builder, VoxelGenerator* generator)
 	TerrainResourceManager* resourceManager = TerrainResourceManager::getInstance();
 
 	TextureResourceHandle texture = resourceManager->getTexture();
-	builder->generate(texture.texture, mNumVoxel, mNumVoxel, mNumVoxel, mChunkId);
+	builder->generate(texture.texture, mNumVoxel + 1, mNumVoxel + 1, mNumVoxel + 1, mChunkId);
 
 	MeshResourceHandle mesh = resourceManager->getMesh();
 	generator->generate(mesh.mesh, texture.texture, mNumVoxel);

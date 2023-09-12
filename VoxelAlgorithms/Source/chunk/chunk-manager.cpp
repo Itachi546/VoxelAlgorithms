@@ -20,11 +20,10 @@ void ChunkManager::initialize()
 	Chunk chunk{glm::ivec3(0), kNumVoxel};
 	chunk.generate(mDensityBuilder, mMeshGenerator);
 	mChunkList.push_back(chunk);
-/*
+
 	Chunk chunk2{ glm::ivec3(kNumVoxel, 0, 0), kNumVoxel };
 	chunk2.generate(mDensityBuilder, mMeshGenerator);
 	mChunkList.push_back(chunk2);
-	*/
 }
 
 void ChunkManager::update(float dt)

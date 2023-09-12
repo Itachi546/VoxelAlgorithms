@@ -12,7 +12,7 @@ layout(location = 1) uniform vec3 uOffset;
 float map(vec3 p)
 {
    p += uOffset;
-   return min(p.y - 8.0f, length(p - vec3(32.0f, 16.0f, 16.0f)) - 8.0f);
+   return min(p.y - 15.0f, length(p - vec3(32.0f, 24.0f, 16.0f)) - 8.0f);
    float noise = 0.0f;
    float amplitude = 1.0f;
    float frequency = 0.005f;
@@ -33,6 +33,7 @@ float map(vec3 p)
 void main() 
 {
   ivec3 uv = ivec3(gl_GlobalInvocationID.xyz);
+
   float density = map(uv);
   imageStore(uDensityTexture, uv, vec4(density));
 }

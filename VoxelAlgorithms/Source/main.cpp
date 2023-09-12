@@ -186,7 +186,7 @@ int main()
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
         chunkManager->render();
 
-        glm::mat4 transform = glm::mat4(1.0f);
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 16.0f, 0.0f));
         glUniformMatrix4fv(0, 1, GL_FALSE, &transform[0][0]);
         DefaultMesh::getInstance()->getSphere()->draw();
         glUseProgram(0);
