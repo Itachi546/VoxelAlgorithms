@@ -54,6 +54,7 @@ void Chunk::draw()
 void Chunk::destroy()
 {
 	TerrainResourceManager* resourceManager = TerrainResourceManager::getInstance();
+
 	if (mMesh.id != INVALID_RESOURCE_HANDLE)
 		resourceManager->releaseMesh(mMesh);
 	if (mDensityTexture.id != INVALID_RESOURCE_HANDLE)

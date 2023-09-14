@@ -149,11 +149,12 @@
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\chunk\build-density.h" />
+    <ClInclude Include="Source\terrain\build-density.h" />
     <ClInclude Include="Source\camera.h" />
-    <ClInclude Include="Source\chunk\chunk-manager.h" />
-    <ClInclude Include="Source\chunk\resource-pool.h" />
-    <ClInclude Include="Source\chunk\terrain-resource-manager.h" />
+    <ClInclude Include="Source\terrain\chunk-manager.h" />
+    <ClInclude Include="Source\terrain\resource-pool.h" />
+    <ClInclude Include="Source\terrain\terrain-physics.h" />
+    <ClInclude Include="Source\terrain\terrain-resource-manager.h" />
     <ClInclude Include="Source\first-person-camera.h" />
     <ClInclude Include="Source\gl.h" />
     <ClInclude Include="Source\glm-includes.h" />
@@ -161,25 +162,28 @@
     <ClInclude Include="Source\input.h" />
     <ClInclude Include="Source\mesh.h" />
     <ClInclude Include="Source\orbit-camera.h" />
+    <ClInclude Include="Source\terrain\terrain.h" />
     <ClInclude Include="Source\timer.h" />
     <ClInclude Include="Source\voxel-algorithm\marching-cube-cpu.h" />
     <ClInclude Include="Source\voxel-algorithm\marchingcube-lut.h" />
     <ClInclude Include="Source\voxel-algorithm\marchingcube.h" />
     <ClInclude Include="Source\voxel-algorithm\voxel-generator.h" />
-    <ClInclude Include="Source\chunk\chunk.h" />
+    <ClInclude Include="Source\terrain\chunk.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\chunk\build-density.cpp" />
-    <ClCompile Include="Source\chunk\chunk-manager.cpp" />
-    <ClCompile Include="Source\chunk\terrain-resource-manager.cpp" />
+    <ClCompile Include="Source\terrain\build-density.cpp" />
+    <ClCompile Include="Source\terrain\chunk-manager.cpp" />
+    <ClCompile Include="Source\terrain\terrain-physics.cpp" />
+    <ClCompile Include="Source\terrain\terrain-resource-manager.cpp" />
     <ClCompile Include="Source\first-person-camera.cpp" />
     <ClCompile Include="Source\gl.cpp" />
     <ClCompile Include="Source\gpu-noise.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\orbit-camera.cpp" />
+    <ClCompile Include="Source\terrain\terrain.cpp" />
     <ClCompile Include="Source\voxel-algorithm\marching-cube-cpu.cpp" />
     <ClCompile Include="Source\voxel-algorithm\marchingcube.cpp" />
-    <ClCompile Include="Source\chunk\chunk.cpp" />
+    <ClCompile Include="Source\terrain\chunk.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Assets\Shaders\build-density.comp.glsl">
@@ -197,7 +201,17 @@
     <CustomBuild Include="Assets\Shaders\main.vert.glsl">
       <FileType>Document</FileType>
     </CustomBuild>
+    <CustomBuild Include="Assets\Shaders\terrain-physics.comp.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <None Include="Assets\Shaders\density.glsl" />
     <None Include="Assets\Shaders\helpers.glsl" />
+    <CustomBuild Include="Assets\Shaders\instanced-mesh.frag.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
+    <CustomBuild Include="Assets\Shaders\instanced-mesh.vert.glsl">
+      <FileType>Document</FileType>
+    </CustomBuild>
     <None Include="Assets\Shaders\noise.comp.glsl">
       <FileType>Document</FileType>
     </None>

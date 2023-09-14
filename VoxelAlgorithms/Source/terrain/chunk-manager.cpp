@@ -4,28 +4,25 @@
 #include "../voxel-algorithm/marchingcube.h"
 #include "../camera.h"
 
-void ChunkManager::initialize(Camera* camera)
+void ChunkManager::initialize(Camera* camera, DensityBuilder* densityBuilder, VoxelGenerator* meshGenerator, uint32_t numVoxel)
 {
+	kNumVoxel = numVoxel;
 	mCamera = camera;
+	mDensityBuilder = densityBuilder;
+	mMeshGenerator = meshGenerator;
 
-	TerrainResourceManager::getInstance()->initialize(kAllocationSize, kNumVoxel);
+	TerrainResourceManager* resourceManager = TerrainResourceManager::getInstance();
+	resourceManager->initialize(kAllocationSize, numVoxel);
 
-	// Initialize density builder
-	GLuint densityCS = gl::createShader("Assets/SPIRV/build-density.comp.spv");
-	mDensityShader = gl::createProgram(&densityCS, 1);
-	gl::destroyShader(densityCS);
-	DensityParams params = { 1.0f, 1.0f, 0.5f, 0.5f, 5 };
-	mDensityBuilder = new DensityBuilder(params, mDensityShader);
-
-	mMeshGenerator = MarchingCube::getInstance();
-	mMeshGenerator->initialize(kNumVoxel);
-
-	initializeLoadingList();
+	Chunk chunk{ glm::ivec3(0), numVoxel };
+	chunk.generate(densityBuilder, meshGenerator);
+	mChunkList.push_back(chunk);
+	//initializeLoadingList();
 }
 
 void ChunkManager::update(float dt)
 {
-	updateLoadingList();
+	//updateLoadingList();
 }
 
 void ChunkManager::render()
@@ -37,10 +34,8 @@ void ChunkManager::render()
 
 void ChunkManager::destroy()
 {
-	gl::destroyProgram(mDensityShader);
-
-	mMeshGenerator->destroy();
-	TerrainResourceManager::getInstance()->destroy();
+	TerrainResourceManager* resourceManager = TerrainResourceManager::getInstance();
+	resourceManager->destroy();
 }
 
 void ChunkManager::initializeLoadingList()

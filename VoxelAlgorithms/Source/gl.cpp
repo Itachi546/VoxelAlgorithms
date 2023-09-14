@@ -55,6 +55,11 @@ namespace gl {
         std::vector<unsigned char> shaderCode;
 		readFile(filename, shaderCode);
 
+        if (shaderCode.size() == 0) {
+            std::cerr << "Failed to load file: " << filename << std::endl;
+            return 0;
+        }
+
 		GLuint handle = glCreateShader(shaderType);
         //glShaderSource(handle, 1, &code, nullptr);
 		//glCompileShader(handle);

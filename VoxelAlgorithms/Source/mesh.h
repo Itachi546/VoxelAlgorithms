@@ -96,6 +96,12 @@ struct Mesh {
         glBindVertexArray(0);
     }
 
+    void drawInstanced(uint32_t count) {
+        glBindVertexArray(vao);
+        glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0, count);
+        glBindVertexArray(0);
+    }
+
     void destroy() {
         gl::destroyVertexArray(vao);
         gl::destroyBuffer(vertexBuffer);

@@ -18,17 +18,15 @@
 
 class DensityBuilder;
 class Camera;
+class TerrainResourceManager;
 
 class ChunkManager {
 
 public:
-	static ChunkManager* getInstance() {
-		static ChunkManager* manager = new ChunkManager();
-		return manager;
-	}
+	ChunkManager() = default;
 
 	// maxChunkCount
-	void initialize(Camera* camera);
+	void initialize(Camera* camera, DensityBuilder* densityBuilder, VoxelGenerator* meshGenerator, uint32_t numVoxel);
 
 	void update(float dt);
 
@@ -36,25 +34,21 @@ public:
 
 	void destroy();
 
-	uint32_t getNumVoxel() const { return kNumVoxel; }
-
 private:
-	ChunkManager() = default;
 
-	const uint32_t kAllocationSize = 500;
+	const uint32_t kAllocationSize = 1;
 
 	std::vector<Chunk> mChunkList;
 
 	std::vector<glm::ivec3> mChunkLoadingList;
 
-	uint32_t kNumVoxel = 32;
-
-	uint32_t mDensityShader = 0;
-	DensityBuilder* mDensityBuilder = nullptr;
-	VoxelGenerator* mMeshGenerator = nullptr;
-
-	const int kMaxChunkRadius = 5;
+	const int kMaxChunkRadius = 1;
 	Camera* mCamera;
+
+	DensityBuilder* mDensityBuilder;
+	VoxelGenerator* mMeshGenerator;
+
+	uint32_t kNumVoxel = 0;
 
 	void initializeLoadingList();
 

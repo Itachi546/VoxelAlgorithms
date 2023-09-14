@@ -24,10 +24,10 @@
     <ClInclude Include="Source\mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\chunk\build-density.h">
+    <ClInclude Include="Source\terrain\build-density.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\chunk\chunk.h">
+    <ClInclude Include="Source\terrain\chunk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\voxel-algorithm\voxel-generator.h">
@@ -60,13 +60,19 @@
     <ClInclude Include="Source\glm-includes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\chunk\chunk-manager.h">
+    <ClInclude Include="Source\terrain\chunk-manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\chunk\resource-pool.h">
+    <ClInclude Include="Source\terrain\resource-pool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\chunk\terrain-resource-manager.h">
+    <ClInclude Include="Source\terrain\terrain-resource-manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\terrain\terrain-physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\terrain\terrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -80,10 +86,10 @@
     <ClCompile Include="Source\gl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\chunk\build-density.cpp">
+    <ClCompile Include="Source\terrain\build-density.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\chunk\chunk.cpp">
+    <ClCompile Include="Source\terrain\chunk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\voxel-algorithm\marchingcube.cpp">
@@ -98,10 +104,16 @@
     <ClCompile Include="Source\first-person-camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\chunk\chunk-manager.cpp">
+    <ClCompile Include="Source\terrain\chunk-manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\chunk\terrain-resource-manager.cpp">
+    <ClCompile Include="Source\terrain\terrain-resource-manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\terrain\terrain-physics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\terrain\terrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -111,10 +123,14 @@
     <CustomBuild Include="Assets\Shaders\list-vertices.comp.glsl" />
     <CustomBuild Include="Assets\Shaders\main.frag.glsl" />
     <CustomBuild Include="Assets\Shaders\main.vert.glsl" />
+    <CustomBuild Include="Assets\Shaders\terrain-physics.comp.glsl" />
+    <CustomBuild Include="Assets\Shaders\instanced-mesh.frag.glsl" />
+    <CustomBuild Include="Assets\Shaders\instanced-mesh.vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\noise.comp.glsl" />
     <None Include="Assets\Shaders\noise.glsl" />
     <None Include="Assets\Shaders\helpers.glsl" />
+    <None Include="Assets\Shaders\density.glsl" />
   </ItemGroup>
 </Project>

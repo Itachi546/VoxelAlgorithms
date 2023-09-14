@@ -5,7 +5,8 @@
 #include "camera.h"
 #include "orbit-camera.h"
 #include "first-person-camera.h"
-#include "chunk/chunk-manager.h"
+#include "terrain/terrain.h"
+#include "terrain/terrain-physics.h"
 
 #include <iostream>
 #include <GLFW/glfw3.h>
@@ -120,17 +121,27 @@ int main()
 
     FirstPersonCamera* camera = new FirstPersonCamera();
     camera->initialize();
-    camera->setPosition(glm::vec3(0.0f, 256.0f, -32.0f));
+    camera->setPosition(glm::vec3(128.0f, 200.0f, 128.0f));
 
-    ChunkManager* chunkManager = ChunkManager::getInstance();
-    chunkManager->initialize(camera);
+    Terrain* terrain = Terrain::getInstance();
+    terrain->initialize(camera);
 
-    uint32_t vs = gl::createShader("Assets/SPIRV/main.vert.spv");
-    uint32_t fs = gl::createShader("Assets/SPIRV/main.frag.spv");
-    uint32_t shaders[] = { vs, fs };
+    TerrainPhysics* physicsManager = terrain->getPhysicsManager();
+
+    // Instanced Shader
+    uint32_t shaders[2] = {};
+    shaders[0] = gl::createShader("Assets/SPIRV/instanced-mesh.vert.spv");
+    shaders[1] = gl::createShader("Assets/SPIRV/instanced-mesh.frag.spv");
+    uint32_t instancedShader = gl::createProgram(shaders, 2);
+    gl::destroyShader(shaders[0]);
+    gl::destroyShader(shaders[1]);
+
+    shaders[0] = gl::createShader("Assets/SPIRV/main.vert.spv");
+    shaders[1] = gl::createShader("Assets/SPIRV/main.frag.spv");
     unsigned int drawShader = gl::createProgram(shaders, 2);
-    gl::destroyShader(vs);
-    gl::destroyShader(fs);
+    gl::destroyShader(shaders[0]);
+    gl::destroyShader(shaders[1]);
+
     unsigned int globalUBO = gl::createBuffer(nullptr, sizeof(GlobalUniforms), GL_DYNAMIC_STORAGE_BIT);
 
     bool enableWireframe = false;
@@ -173,10 +184,18 @@ int main()
         else if (input->isKeyDown(GLFW_KEY_2))
             camera->lift(-dt * walkSpeed);
 
+        if (input->wasKeyPressed(GLFW_KEY_F)) {
+            Rigidbody rb = {};
+            rb.position = camera->getPosition();
+            rb.prevPosition = rb.position;
+            rb.velocity = -camera->getForward() * 30.0f;
+            physicsManager->addRigidbody(rb);
+        }
+
         camera->setAspect(float(gWidth) / float(gHeight));
         camera->update(dt);
 
-        chunkManager->update(dt);
+        terrain->update(dt);
 
 
         gGlobalUniforms.P = camera->getProjectionMatrix();
@@ -185,13 +204,16 @@ int main()
         gGlobalUniforms.cameraPosition = glm::vec4(camera->getPosition(), 1.0f);
         glNamedBufferSubData(globalUBO, 0, sizeof(GlobalUniforms),  &gGlobalUniforms);
 
+        // Draw Terrain
         glUseProgram(drawShader);
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
-        chunkManager->render();
+        terrain->render();
 
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 16.0f, 0.0f));
-        glUniformMatrix4fv(0, 1, GL_FALSE, &transform[0][0]);
-        DefaultMesh::getInstance()->getSphere()->draw();
+        // Draw Spheres
+        glUseProgram(instancedShader);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, globalUBO);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, physicsManager->mRBUniformBuffer);
+        DefaultMesh::getInstance()->getSphere()->drawInstanced(physicsManager->mRBCount);
         glUseProgram(0);
       
         glfwSwapBuffers(window);
@@ -203,7 +225,7 @@ int main()
         input->update();
     }
 
-    chunkManager->destroy();
+    terrain->destroy();
 
     fullScreenQuad->destroy();
     glfwDestroyWindow(window);
