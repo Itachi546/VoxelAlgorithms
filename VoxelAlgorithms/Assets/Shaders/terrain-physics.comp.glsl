@@ -25,13 +25,12 @@ layout(location = 1) uniform float uDt;
 
 const float GRAVITY = -4.0f;
 
-const ivec2 E = ivec2(1, 0);
-vec3 calculateNormal(vec4 p) {
-   ivec3 ip = ivec3(p.xyz);
+const vec2 E = vec2(0.001, 0);
+vec3 calculateNormal(vec3 p) {
    return normalize(vec3(
-      getDensity(ip + E.xyy) - p.w,
-      getDensity(ip + E.yxy) - p.w,
-      getDensity(ip + E.yyx) - p.w
+      getDensity(p + E.xyy) - getDensity(p - E.xyy),
+      getDensity(p + E.yxy) - getDensity(p - E.yxy),
+      getDensity(p + E.yyx) - getDensity(p - E.yyx)
    ));
 }
 
@@ -40,14 +39,8 @@ vec3 interpolatePosition(vec4 p0, vec4 p1, float isoLevel, out vec3 n) {
    float d1 = p1.w;
 
    float d = (isoLevel - d0)/ (d1 - d0);
-
-   vec3 n0 = calculateNormal(p0);
-   vec3 n1 = calculateNormal(p1);
-   n = n0 + d * (n1 - n0); 
-   
    vec3 p = p0.xyz + d * (p1.xyz - p0.xyz);
-
-   n = normalize(n);
+   n = calculateNormal(p);
 
    return p;
 }
@@ -64,29 +57,25 @@ void main() {
 	int velocitySteps = 1;
 	float dt = uDt / float(velocitySteps);
 
+	float isoLevel = 0.0f;
     float radius = 1.0f;
-	for(int i = 0; i < velocitySteps; ++i) {
-		vec3 v = normalize(velocity);
-    	float d0 = getDensity(p0 + v * radius);
-	    float d1 = getDensity(p1 + v * radius);
 
-		if(d0 >	0.0f &&	d1 < 0.0f) {
-           // We have collision
-     	   float isoLevel =	0.0f;
-
-		   // Calculate	the	contact	point and normal
-		   vec3	n =	vec3(0.0f);
-		   vec3	contactPoint = interpolatePosition(vec4(p0, d0), vec4(p1, d1), isoLevel, n);
-
-		   float penetrationDistance = radius -	length(contactPoint	- p1);
+	float d1 = getDensity(p1);
+	if(d1 <= radius) {
+	   float d0 = getDensity(p0);
+	   // Calculate	the	contact	point and normal
+	   vec3	n = vec3(0.0f);
+	   vec3	contactPoint = interpolatePosition(vec4(p0, d0), vec4(p1, d1), isoLevel, n);
+	   if (dot(n, velocity) < 0.0f) {
+		   float penetrationDistance = radius - d1;
 		   p1 += penetrationDistance * n;
-		   velocity	= reflect(rbs[id].velocity, n)	* 0.1;
-	    }
-
-		p0 = p1;
-		velocity +=	vec3(0.0f, GRAVITY,	0.0f) *	invMass * dt;
-        p1 += rbs[id].velocity * dt;
+		   velocity = reflect(velocity, n) * rbs[id].restitution;
+	   }
 	}
+
+	p0 = p1;
+	velocity += vec3(0.0f, GRAVITY, 0.0f) * invMass * dt;
+	p1 += rbs[id].velocity * dt;
 
     rbs[id].prevPosition = p0;
 	rbs[id].position = p1;

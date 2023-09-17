@@ -20,7 +20,6 @@ void Terrain::initialize(Camera* camera)
 	mPhysicsManager = new TerrainPhysics();
 	mPhysicsManager->initialize(mDensityBuilder->densityParamUB);
 
-
 }
 
 void Terrain::update(float dt)

@@ -1,10 +1,10 @@
 #version 460
 
-layout(location = 0) in vec3 position;
+layout(location = 0) in vec4 position;
 layout(location = 1) in vec3 normal;
 
 layout(location = 0) out vec3 vNormal;
-layout(location = 1) out vec3 vPosition;
+layout(location = 1) out vec4 vPosition;
 layout(location = 2) out vec3 vCamPos;
 
 #extension GL_EXT_scalar_block_layout : enable
@@ -23,6 +23,6 @@ void main() {
   gl_Position = P * V * worldPos;
 
   vNormal = normal;
-  vPosition = worldPos.xyz;
+  vPosition = vec4(worldPos.xyz, position.w);
   vCamPos = cameraPosition.xyz;
 }

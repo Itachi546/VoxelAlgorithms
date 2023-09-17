@@ -10,7 +10,7 @@ struct Rigidbody {
 	float mass = 1.0f;
 
 	glm::vec3 prevPosition;
-	float restitution = 0.9f;
+	float restitution = 0.1f;
 
 	glm::vec3 velocity = glm::vec3(0.0f);
 	float _pad1;

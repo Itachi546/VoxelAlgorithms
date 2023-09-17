@@ -6,6 +6,7 @@ layout(location = 1) in vec3 normal;
 layout(location = 0) out vec3 vNormal;
 layout(location = 1) out vec3 vPosition;
 layout(location = 2) out vec3 vCamPos;
+layout(location = 3) out vec3 vColor;
 
 #extension GL_EXT_scalar_block_layout : enable
 
@@ -15,6 +16,11 @@ layout(std430, binding = 0) uniform GlobalData {
    mat4 invVP;
    vec4 cameraPosition;
 };
+
+vec3 getColor(int id) {
+	id = (id << 3) * 49348 + (id << 2) * 3828 + (id << 1) * 9832;
+	return vec3((id >> 8) / 255.0f, (id >> 16) / 255.0f, (id >> 24) / 255.0f);
+}
 
 struct Rigidbody {
 	vec3 position;
@@ -40,4 +46,5 @@ void main() {
   vNormal = normal;
   vPosition = worldPos.xyz;
   vCamPos = cameraPosition.xyz;
+  vColor = getColor(gl_InstanceID);
 }

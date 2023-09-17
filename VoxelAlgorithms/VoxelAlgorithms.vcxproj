@@ -188,12 +188,15 @@
   <ItemGroup>
     <CustomBuild Include="Assets\Shaders\build-density.comp.glsl">
       <FileType>Document</FileType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Assets/Shaders/density.glsl;Assets/Shaders/helpers.glsl;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="Assets\Shaders\list-indices.comp.glsl">
       <FileType>Document</FileType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Assets/Shaders/noise.glsl;Assets/Shaders/density.glsl;Assets/Shaders/helpers.glsl;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="Assets\Shaders\list-vertices.comp.glsl">
       <FileType>Document</FileType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Assets/Shaders/noise.glsl;Assets/Shaders/density.glsl;Assets/Shaders/helpers.glsl;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="Assets\Shaders\main.frag.glsl">
       <FileType>Document</FileType>
@@ -203,6 +206,7 @@
     </CustomBuild>
     <CustomBuild Include="Assets\Shaders\terrain-physics.comp.glsl">
       <FileType>Document</FileType>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Assets/Shaders/density.glsl;Assets/Shaders/helpers.glsl;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <None Include="Assets\Shaders\density.glsl" />
     <None Include="Assets\Shaders\helpers.glsl" />

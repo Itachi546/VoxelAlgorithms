@@ -5,6 +5,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 #extension GL_GOOGLE_include_directive : require
 
 #include "helpers.glsl"
+#include "density.glsl"
 
 struct Triangulation {
   int edges[16];
@@ -30,6 +31,29 @@ layout(std430, binding = 4) writeonly buffer SplatBuffer {
 
 layout(location = 2) uniform int uVoxelCount;
 
+
+float calculateAO(vec3 r0) {
+
+    float AO_DISTANCE = 3.0f;
+    float stepSize = AO_DISTANCE / AO_STEPS;
+    float totalAO = 0.0f;
+    for (int d = 0; d < AO_DIR_COUNT; ++d) {
+        vec3 rd = AO_DIRS[d];
+        vec3 p = r0;
+        float ao = 0.0f;
+        float sum = 0.0;
+        for (int i = 0; i < AO_STEPS; ++i) {
+            p += rd * stepSize;
+            ao += (1.0f / pow(2, i)) * getDensity(p);
+            sum += (1.0f / pow(2, i)) * (i + 1) * stepSize;
+        }
+        totalAO += ao / sum;
+    }
+
+    totalAO = totalAO / float(AO_DIR_COUNT);
+    return totalAO;
+}
+
 float getDensity(ivec3 uv) {
   return imageLoad(uNoiseTexture, uv).r;
 }
@@ -39,12 +63,12 @@ vec4 createPoint(ivec3 p) {
 }
 
 const ivec2 E = ivec2(1, 0);
-vec3 calculateNormal(vec4 p) {
-   ivec3 ip = ivec3(p.xyz);
+vec3 calculateNormal(vec3 p) {
+   vec3 ip = ivec3(p.xyz);
    return normalize(vec3(
-      getDensity(ip + E.xyy) - p.w,
-      getDensity(ip + E.yxy) - p.w,
-      getDensity(ip + E.yyx) - p.w
+      getDensity(ip + E.xyy) - getDensity(ip - E.xyy),
+      getDensity(ip + E.yxy) - getDensity(ip - E.yxy),
+      getDensity(ip + E.yyx) - getDensity(ip - E.yyx)
    ));
 }
 
@@ -54,14 +78,11 @@ vec3 interpolatePosition(vec4 p0, vec4 p1, float isoLevel, out vec3 n) {
 
    float d = (isoLevel - d0)/ (d1 - d0);
 
-   vec3 n0 = calculateNormal(p0);
-   vec3 n1 = calculateNormal(p1);
+   vec3 n0 = calculateNormal(p0.xyz);
+   vec3 n1 = calculateNormal(p1.xyz);
    n = n0 + d * (n1 - n0); 
-   
+
    vec3 p = p0.xyz + d * (p1.xyz - p0.xyz);
-
-   n = normalize(n);
-
    return p;
 }
 
@@ -111,6 +132,7 @@ void main() {
        Vertex vertex;
        vertex.p[0] = p.x, vertex.p[1] = p.y, vertex.p[2] = p.z;
        vertex.n[0] = n.x, vertex.n[1] = n.y, vertex.n[2] = n.z;
+       vertex.p[3] = calculateAO(p + 0.5 * n);
 
  	   uint	index =	atomicAdd(totalTriangle, 1);
        values[e / 3] = index;

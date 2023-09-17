@@ -1,5 +1,5 @@
 struct Vertex {
-   float p[3];
+   float p[4];
    float n[3];
 };
 
