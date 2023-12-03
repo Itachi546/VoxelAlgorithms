@@ -17,6 +17,14 @@ layout(std430, binding = 0) uniform GlobalData {
    vec4 cameraPosition;
 };
 
+vec3 COLORS[5] = vec3[5](
+  vec3(1.0, 0.0, 0.0f),
+  vec3(0.0, 1.0, 0.0f),
+  vec3(0.0, 0.0, 1.0f),
+  vec3(1.0, 0.0, 1.0f),
+  vec3(1.0, 1.0, 0.0f)
+);
+
 vec3 getColor(int id) {
 	id = (id << 3) * 49348 + (id << 2) * 3828 + (id << 1) * 9832;
 	return vec3((id >> 8) / 255.0f, (id >> 16) / 255.0f, (id >> 24) / 255.0f);
@@ -46,5 +54,6 @@ void main() {
   vNormal = normal;
   vPosition = worldPos.xyz;
   vCamPos = cameraPosition.xyz;
-  vColor = getColor(gl_InstanceID);
+  int id = gl_InstanceID % 5;
+  vColor = COLORS[id];
 }

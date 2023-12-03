@@ -33,7 +33,8 @@ float getDensity(vec3 p)
       amplitude *= persistence;
       frequency *= lacunarity;
    }
-   noise = clamp(noise * noise,	0.0, 1.0);
+   noise = 1.0 - abs(noise);//clamp(noise * noise,	0.0, 1.0);
+   noise = clamp(noise * noise, 0.0, 1.0);
    float d = p.y - 128.0f + (noise * 2.0f - 1.0f) * 30.0f;
    return d;
 }

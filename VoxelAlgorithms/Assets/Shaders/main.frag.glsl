@@ -30,7 +30,6 @@ void main() {
   vec3 n = vec3(0.0f);
 
 #if 0
-  //vec3 p = getFractalNoise(vPosition.xyz);
   n = normalize(vNormal);
 #else
   vec3 dx = dFdx(vPosition.xyz);

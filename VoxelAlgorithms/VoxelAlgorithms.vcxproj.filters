@@ -132,5 +132,6 @@
     <None Include="Assets\Shaders\noise.glsl" />
     <None Include="Assets\Shaders\helpers.glsl" />
     <None Include="Assets\Shaders\density.glsl" />
+    <None Include="Assets\Shaders\fast-noise-lite.glsl" />
   </ItemGroup>
 </Project>

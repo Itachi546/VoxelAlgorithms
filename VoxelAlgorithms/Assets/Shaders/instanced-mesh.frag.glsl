@@ -31,7 +31,8 @@ void main() {
   vec3 c1 = vec3(0.2, 0.5, 0.1);
   vec3 c0 = vec3(0.7, 0.3, 0.1);
 
-  col += diffuse;
+  col += diffuse; 
+  col *= vColor;
 
   float fogDensity = 0.0005f;
   float heightFactor = 0.002f;

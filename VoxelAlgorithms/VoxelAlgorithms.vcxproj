@@ -145,7 +145,7 @@
     </CustomBuild>
     <CustomBuild>
       <AdditionalInputs>%(FullPath)</AdditionalInputs>
-      <Command>$(VULKAN_SDK)\Bin\glslangValidator.exe %(FullPath) -V -o  $(ProjectDir)Assets/SPIRV/%(Filename).spv</Command>
+      <Command>$(VULKAN_SDK)\Bin\glslangValidator.exe --auto-map-locations -G %(FullPath) -o  $(ProjectDir)Assets/SPIRV/%(Filename).spv</Command>
     </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -209,6 +209,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Assets/Shaders/density.glsl;Assets/Shaders/helpers.glsl;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
     <None Include="Assets\Shaders\density.glsl" />
+    <None Include="Assets\Shaders\fast-noise-lite.glsl" />
     <None Include="Assets\Shaders\helpers.glsl" />
     <CustomBuild Include="Assets\Shaders\instanced-mesh.frag.glsl">
       <FileType>Document</FileType>
